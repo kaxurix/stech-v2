@@ -43,8 +43,15 @@ COPY --from=frontend-builder --chown=www-data:www-data /app/public/build ./publi
 # Gunakan konfigurasi PHP production bawaan
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Set permissions untuk folder storage dan bootstrap/cache agar bisa ditulis oleh server web
+# Set permissions awal untuk folder storage dan bootstrap/cache
 RUN chmod -R 775 storage bootstrap/cache
+
+# Salin dan konfigurasi entrypoint script untuk otomatisasi runtime permission
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Set entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Jalankan PHP-FPM secara default
 EXPOSE 9000
