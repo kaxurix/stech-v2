@@ -9,14 +9,14 @@ services:
     volumes:
       # Mount file .env agar konfigurasi produksi bisa diubah secara dinamis tanpa rebuild
       - ./.env:/var/www/.env
-      # Mount volume lokal untuk persistensi database SQLite
-      - ./database:/var/www/database
       # Mount volume lokal untuk persistensi file storage (uploads, logs)
       - ./storage:/var/www/storage
       # Volume bersama bernama untuk membagikan file publik (public/build, vendor) dengan Nginx
       - stech-assets:/var/www
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    depends_on:
+      - stech-db
 
   # 2. Nginx Service (Web Server)
   stech-web:
@@ -34,6 +34,26 @@ services:
     depends_on:
       - stech-app
 
+  # 3. Database Service (MySQL)
+  stech-db:
+    image: mysql:8.0
+    container_name: stech-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-stech_db}
+      MYSQL_USER: ${DB_USERNAME:-stech_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secret_password}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret_password}
+    volumes:
+      - stech-db-data:/var/lib/mysql
+    ports:
+      # Port host default 3306. Jika port 3306 VPS bentrok dengan DB lain,
+      # kamu tinggal ganti DB_PORT=3307 di file .env VPS kamu.
+      - "${DB_PORT:-3306}:3306"
+
 volumes:
   # Deklarasi volume bersama bernama
   stech-assets:
+  # Volume untuk persistensi database MySQL
+  stech-db-data:
+
