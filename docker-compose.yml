@@ -1,0 +1,37 @@
+services:
+  # 1. PHP-FPM Service (Aplikasi Laravel)
+  stech-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stech-app
+    restart: unless-stopped
+    volumes:
+      # Mount file .env agar konfigurasi produksi bisa diubah secara dinamis tanpa rebuild
+      - ./.env:/var/www/.env
+      # Mount volume lokal untuk persistensi database SQLite
+      - ./database:/var/www/database
+      # Mount volume lokal untuk persistensi file storage (uploads, logs)
+      - ./storage:/var/www/storage
+      # Volume bersama bernama untuk membagikan file publik (public/build, vendor) dengan Nginx
+      - stech-assets:/var/www
+
+  # 2. Nginx Service (Web Server)
+  stech-web:
+    image: nginx:alpine
+    container_name: stech-web
+    restart: unless-stopped
+    ports:
+      # Port host default 8085, dapat diubah via .env VPS jika diperlukan (contoh: PORT_STECH=8090)
+      - "${PORT_STECH:-8085}:80"
+    volumes:
+      # Konfigurasi Nginx khusus untuk proxy Docker
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # Mount volume bersama agar Nginx dapat menyajikan aset statis seperti CSS/JS
+      - stech-assets:/var/www
+    depends_on:
+      - stech-app
+
+volumes:
+  # Deklarasi volume bersama bernama
+  stech-assets:
