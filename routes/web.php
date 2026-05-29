@@ -27,6 +27,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/peserta/{id}',               [AdminController::class, 'show'])->name('show');
     Route::post('/peserta/{id}/approve',      [AdminController::class, 'approve'])->name('approve');
     Route::post('/peserta/{id}/reject',       [AdminController::class, 'reject'])->name('reject');
+    Route::post('/peserta/{id}/toggle-finalist', [AdminController::class, 'toggleFinalist'])->name('toggle-finalist');
     Route::get('/payment/{id}/download',      [PaymentController::class, 'download'])->name('payment.download');
     Route::get('/payment/{id}/view',          [PaymentController::class, 'view'])->name('payment.view');
 });

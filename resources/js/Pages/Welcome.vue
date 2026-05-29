@@ -127,14 +127,10 @@ onMounted(() => {
       <div class="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
 
         <!-- Logo -->
-        <a href="/" class="flex items-center gap-2.5 group flex-shrink-0">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
-                      flex items-center justify-center text-sm font-bold shadow-lg
-                      group-hover:shadow-violet-500/25 transition-shadow duration-300">S</div>
-          <div class="leading-tight">
-            <span class="block text-sm font-bold tracking-tight">S-Tech</span>
-            <span class="block text-[10px] text-white/35 -mt-0.5">Soedirman Technophoria</span>
-          </div>
+        <a href="/" class="flex items-center group flex-shrink-0">
+          <span class="text-base font-bold tracking-tight bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
+            Soedirman Technophoria
+          </span>
         </a>
 
         <!-- Desktop nav -->
@@ -251,11 +247,13 @@ onMounted(() => {
                            transition-all duration-200 active:scale-[0.98]">
               Daftar Sekarang →
             </button>
-            <a href="#about"
+            <a href="https://drive.google.com/your-guidebook-link" target="_blank" rel="noopener noreferrer"
                class="w-full sm:w-auto px-7 py-3.5 text-sm font-medium text-center rounded-xl
-                      border border-white/10 text-white/60 hover:text-white
-                      hover:border-white/20 hover:bg-white/5 transition-all duration-200">
-              Pelajari Lebih Lanjut
+                      border border-violet-500/30 text-violet-300 hover:text-white
+                      hover:border-violet-500/60 hover:bg-violet-500/10 transition-all duration-200
+                      flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Unduh Guidebook
             </a>
           </div>
           <div class="flex flex-wrap items-center justify-center gap-3 mt-12 sm:mt-14">
@@ -528,8 +526,6 @@ onMounted(() => {
       <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center
                   justify-between gap-4 text-xs text-white/20">
         <div class="flex items-center gap-2.5">
-          <div class="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600
-                      flex items-center justify-center text-[10px] font-bold">S</div>
           <span>Soedirman Technophoria 2026</span>
         </div>
         <p>Program Kerja · Informatika · Universitas Jenderal Soedirman</p>
@@ -586,13 +582,9 @@ onMounted(() => {
 
             <!-- ── LOGIN TAB ── -->
             <div v-if="modalTab === 'login'" class="p-6 sm:p-8 overflow-y-auto">
-              <div class="flex items-center gap-2.5 mb-6">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
-                            flex items-center justify-center text-sm font-bold">S</div>
-                <div>
-                  <p class="text-sm font-bold leading-none">S-Tech Portal</p>
-                  <p class="text-[10px] text-white/35 mt-0.5">Soedirman Technophoria</p>
-                </div>
+              <div class="mb-6">
+                <p class="text-sm font-bold leading-none text-white">Soedirman Technophoria</p>
+                <p class="text-[10px] text-white/35 mt-1">Portal Peserta</p>
               </div>
               <h3 class="text-xl font-bold text-white mb-1">Masuk ke Akunmu</h3>
               <p class="text-sm text-white/40 mb-6">Lanjutkan proses pendaftaranmu.</p>

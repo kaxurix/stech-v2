@@ -16,6 +16,18 @@ class DashboardController extends Controller
         $payment      = $registration?->payment;
         $submission   = $registration?->submission;
 
+        $finalists = \App\Models\Registration::where('is_finalist', true)
+            ->with(['submission'])
+            ->get()
+            ->map(fn ($reg) => [
+                'id'            => $reg->id,
+                'team_name'     => $reg->team_name,
+                'institution'   => $reg->institution,
+                'category'      => $reg->category,
+                'competition'   => $reg->competition,
+                'project_title' => $reg->submission?->project_title ?? '-',
+            ]);
+
         return Inertia::render('Dashboard', [
             'user' => [
                 'id'    => $user->id,
@@ -34,6 +46,7 @@ class DashboardController extends Controller
                 'status_label' => $registration->statusLabel(),
                 'status_color' => $registration->statusColor(),
                 'created_at'   => $registration->created_at->format('d M Y'),
+                'is_finalist'  => (bool) $registration->is_finalist,
             ] : null,
             'payment' => $payment ? [
                 'id'                => $payment->id,
@@ -53,6 +66,7 @@ class DashboardController extends Controller
                 'description'   => $submission->description,
                 'submitted_at'  => $submission->created_at->format('d M Y, H:i'),
             ] : null,
+            'finalists' => $finalists,
         ]);
     }
 }

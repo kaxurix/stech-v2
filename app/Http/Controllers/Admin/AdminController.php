@@ -17,7 +17,7 @@ class AdminController extends Controller
 
     public function index(Request $request): Response
     {
-        $query = Registration::with(['user', 'payment'])
+        $query = Registration::with(['user', 'payment', 'submission'])
             ->latest();
 
         // Filter by status
@@ -45,6 +45,7 @@ class AdminController extends Controller
             'status'       => $reg->status,
             'status_label' => $reg->statusLabel(),
             'status_color' => $reg->statusColor(),
+            'is_finalist'  => $reg->is_finalist,
             'created_at'   => $reg->created_at->format('d M Y'),
             'user' => [
                 'name'  => $reg->user->name,
@@ -54,6 +55,20 @@ class AdminController extends Controller
                 'status'     => $reg->payment->status,
                 'uploaded_at' => $reg->payment->uploaded_at?->format('d M Y, H:i'),
             ] : null,
+            'submission' => $reg->submission ? [
+                'project_title' => $reg->submission->project_title,
+                'github_url'    => $reg->submission->github_url,
+                'drive_url'     => $reg->submission->drive_url,
+                'description'   => $reg->submission->description,
+                'submitted_at'  => $reg->submission->submitted_at?->format('d M Y, H:i') ?? '-',
+            ] : null,
+            // Progress: how many of 4 key steps done
+            'progress_steps' => array_filter([
+                $reg->payment !== null,               // uploaded proof
+                in_array($reg->status, ['verified', 'pending_verification']), // payment verified/pending
+                $reg->status === 'verified',          // verified
+                $reg->submission !== null,            // submitted
+            ]),
         ]);
 
         // Stats
@@ -168,6 +183,32 @@ class AdminController extends Controller
         return redirect()->route('admin.show', $id)->with('flash', [
             'type'    => 'error',
             'message' => "Pembayaran {$registration->team_name} ditolak.",
+        ]);
+    }
+
+    // ── Toggle finalist status ───────────────────────────────────────────────
+
+    public function toggleFinalist(Request $request, int $id): RedirectResponse
+    {
+        $registration = Registration::findOrFail($id);
+
+        // Only verified teams can qualify for the final
+        if ($registration->status !== 'verified') {
+            return back()->with('flash', [
+                'type'    => 'error',
+                'message' => 'Tim harus diverifikasi terlebih dahulu sebelum diloloskan ke final.',
+            ]);
+        }
+
+        $registration->update([
+            'is_finalist' => !$registration->is_finalist,
+        ]);
+
+        $statusText = $registration->is_finalist ? 'diloloskan ke final' : 'dibatalkan dari final';
+
+        return back()->with('flash', [
+            'type'    => 'success',
+            'message' => "Tim {$registration->team_name} berhasil {$statusText}!",
         ]);
     }
 }

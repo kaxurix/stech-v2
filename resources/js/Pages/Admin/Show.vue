@@ -113,10 +113,8 @@ function logout() {
             <span class="text-sm">Kembali</span>
           </a>
           <div class="w-px h-5 bg-white/10"></div>
-          <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
-                        flex items-center justify-center text-xs font-bold">S</div>
-            <p class="text-sm font-semibold">Detail Peserta</p>
+          <div class="flex items-center">
+            <p class="text-sm font-semibold text-white">Detail Peserta</p>
           </div>
         </div>
         <div class="flex items-center gap-4">

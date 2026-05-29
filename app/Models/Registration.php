@@ -17,6 +17,11 @@ class Registration extends Model
         'phone',
         'category',
         'status',
+        'is_finalist',
+    ];
+
+    protected $casts = [
+        'is_finalist' => 'boolean',
     ];
 
     // ── Status labels ─────────────────────────────────────────────────────────
