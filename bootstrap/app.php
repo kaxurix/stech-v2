@@ -1,14 +1,9 @@
 <?php
-// ──────────────────────────────────────────────────────────────────────────────
-// bootstrap/app.php  (Laravel 11 style – replace the entire file)
-// Registers the DemoAuth middleware alias so routes/web.php can use it.
-// ──────────────────────────────────────────────────────────────────────────────
 
-use App\Http\Middleware\DemoAuth;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,18 +12,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust all proxies (ngrok, load balancers) so https:// URLs are generated correctly
         $middleware->trustProxies(at: '*');
-
+        $middleware->append(\App\Http\Middleware\NgrokWarningMiddleware::class);
+        
         // Inertia share middleware
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
-        // Register our custom demo-auth alias
+        // Middleware aliases
         $middleware->alias([
-            'demo.auth' => DemoAuth::class,
+            'admin' => AdminMiddleware::class,
         ]);
+
+        $middleware->redirectGuestsTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

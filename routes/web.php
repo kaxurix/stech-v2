@@ -1,26 +1,32 @@
 <?php
 
-use App\Http\Controllers\DemoController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| S-Tech – Soedirman Technophoria Demo Routes
-|--------------------------------------------------------------------------
-|
-| These routes serve a high-fidelity prototype for the S-Tech annual event.
-| Authentication is simulated via a simple session flag — no real DB needed.
-|
-*/
+// ── Public ────────────────────────────────────────────────────────────────────
+Route::get('/', [AuthController::class, 'welcome'])->name('welcome');
 
-// ── Landing Page ──────────────────────────────────────────────────────────────
-Route::get('/', [DemoController::class, 'welcome'])->name('welcome');
+// ── Auth ──────────────────────────────────────────────────────────────────────
+Route::post('/register', [AuthController::class, 'register'])->name('register');
+Route::post('/login',    [AuthController::class, 'login'])->name('login');
+Route::post('/logout',   [AuthController::class, 'logout'])->name('logout');
 
-// ── Auth (Dummy – no real DB check) ───────────────────────────────────────────
-Route::post('/login', [DemoController::class, 'login'])->name('login');
-Route::post('/logout', [DemoController::class, 'logout'])->name('logout');
+// ── Peserta Dashboard (requires auth) ─────────────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/payment/upload', [PaymentController::class, 'upload'])->name('payment.upload');
+    Route::post('/submission/upload', [\App\Http\Controllers\SubmissionController::class, 'upload'])->name('submission.upload');
+});
 
-// ── Protected Dashboard (guarded by demo session flag) ────────────────────────
-Route::middleware('demo.auth')->group(function () {
-    Route::get('/dashboard', [DemoController::class, 'dashboard'])->name('dashboard');
+// ── Admin Panel (requires auth + admin role) ──────────────────────────────────
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/',                           [AdminController::class, 'index'])->name('index');
+    Route::get('/peserta/{id}',               [AdminController::class, 'show'])->name('show');
+    Route::post('/peserta/{id}/approve',      [AdminController::class, 'approve'])->name('approve');
+    Route::post('/peserta/{id}/reject',       [AdminController::class, 'reject'])->name('reject');
+    Route::get('/payment/{id}/download',      [PaymentController::class, 'download'])->name('payment.download');
+    Route::get('/payment/{id}/view',          [PaymentController::class, 'view'])->name('payment.view');
 });
