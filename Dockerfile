@@ -8,7 +8,7 @@ COPY . .
 RUN npm run build
 
 # === STAGE 2: PHP Runtime ===
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # Set working directory
 WORKDIR /var/www
