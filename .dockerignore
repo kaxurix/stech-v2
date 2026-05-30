@@ -8,10 +8,7 @@ tests
 .env
 .env.backup
 .env.production
-storage/framework/cache/data/*
-storage/framework/sessions/*
-storage/framework/views/*
-storage/logs/*
+storage/
 bootstrap/cache/*
 database/*.sqlite
 
