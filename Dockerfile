@@ -43,8 +43,8 @@ COPY --from=frontend-builder --chown=www-data:www-data /app/public/build ./publi
 # Gunakan konfigurasi PHP production bawaan
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
-# Set permissions awal untuk folder storage dan bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
+# Buat folder storage kosong (karena di-ignore di .dockerignore) dan set permissions awal
+RUN mkdir -p storage && chmod -R 775 storage bootstrap/cache
 
 # Salin dan konfigurasi entrypoint script untuk otomatisasi runtime permission
 COPY docker-entrypoint.sh /usr/local/bin/
