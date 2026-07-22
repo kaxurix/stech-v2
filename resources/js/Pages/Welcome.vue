@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
+import {
+  X, GraduationCap, BookOpen, Globe, Target, Handshake, Lightbulb,
+  TrendingUp, Briefcase, Network, CreditCard, Check,
+} from '@lucide/vue'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface LoginForm {
@@ -19,8 +23,6 @@ const page = usePage()
 // ── State ─────────────────────────────────────────────────────────────────────
 const showModal     = ref(false)
 const modalTab      = ref<'login' | 'register'>('login') // aktif tab
-const heroVisible   = ref(false)
-const cardsVisible  = ref(false)
 const mobileMenuOpen = ref(false)
 
 const loginForm = ref<LoginForm>({
@@ -43,10 +45,55 @@ const timeline = [
   { date: '22 Jul 2026', label: 'Grand Final & Seminar Nasional', done: false },
 ]
 
+// ── Bintang dekoratif ──────────────────────────────────────────────────────────
+// Pool bintang yang lebih besar & lebih tersebar (posisi/ukuran/rotasi bervariasi,
+// dari yang kecil-kecil sampai cukup besar). Tiap section mengambil slice
+// berbeda dari pool ini supaya taburannya tidak terlihat berulang identik
+// antar section, sekaligus melanjutkan motif "naik menuju cahaya" (bintang
+// mulai muncul begitu meninggalkan zona awan di hero).
+const starFieldPool = [
+  { top: '6%',  left: '5%',  size: 26, rotate: -15, opacity: 0.32, duration: 5   },
+  { top: '13%', left: '90%', size: 34, rotate: 20,  opacity: 0.26, duration: 6.4 },
+  { top: '24%', left: '8%',  size: 18, rotate: 35,  opacity: 0.3,  duration: 5.6 },
+  { top: '33%', left: '95%', size: 22, rotate: -25, opacity: 0.24, duration: 7   },
+  { top: '46%', left: '3%',  size: 30, rotate: 10,  opacity: 0.28, duration: 6.2 },
+  { top: '55%', left: '92%', size: 16, rotate: -10, opacity: 0.34, duration: 5.4 },
+  { top: '64%', left: '6%',  size: 24, rotate: 28,  opacity: 0.22, duration: 6.8 },
+  { top: '74%', left: '94%', size: 32, rotate: -30, opacity: 0.26, duration: 7.2 },
+  { top: '84%', left: '9%',  size: 20, rotate: 15,  opacity: 0.3,  duration: 5.8 },
+  { top: '92%', left: '88%', size: 28, rotate: -18, opacity: 0.25, duration: 6.6 },
+  { top: '38%', left: '50%', size: 14, rotate: 40,  opacity: 0.18, duration: 5.2 },
+  { top: '68%', left: '45%', size: 18, rotate: -35, opacity: 0.2,  duration: 6   },
+  { top: '10%', left: '38%', size: 12, rotate: 22,  opacity: 0.16, duration: 4.8 },
+  { top: '18%', left: '65%', size: 40, rotate: -12, opacity: 0.2,  duration: 7.6 },
+  { top: '29%', left: '22%', size: 16, rotate: 45,  opacity: 0.22, duration: 5.4 },
+  { top: '41%', left: '78%', size: 20, rotate: -22, opacity: 0.24, duration: 6.4 },
+  { top: '50%', left: '15%', size: 36, rotate: 18,  opacity: 0.2,  duration: 7   },
+  { top: '58%', left: '60%', size: 10, rotate: -40, opacity: 0.16, duration: 4.6 },
+  { top: '61%', left: '28%', size: 22, rotate: 30,  opacity: 0.26, duration: 6   },
+  { top: '71%', left: '55%', size: 14, rotate: -18, opacity: 0.18, duration: 5.2 },
+  { top: '79%', left: '35%', size: 30, rotate: 12,  opacity: 0.22, duration: 6.8 },
+  { top: '88%', left: '68%', size: 18, rotate: -28, opacity: 0.2,  duration: 5.6 },
+  { top: '4%',  left: '75%', size: 24, rotate: 8,   opacity: 0.24, duration: 6.2 },
+  { top: '96%', left: '20%', size: 12, rotate: 36,  opacity: 0.16, duration: 4.4 },
+]
+
 const seminarTopics = [
-  { icon: '◆', label: 'Web Development Trends 2026' },
-  { icon: '⬟', label: 'Career Path di Industri Tech' },
-  { icon: '◇', label: 'Networking & Kolaborasi Industri' },
+  { icon: TrendingUp, label: 'Web Development Trends 2026' },
+  { icon: Briefcase,  label: 'Career Path di Industri Tech' },
+  { icon: Network,    label: 'Networking & Kolaborasi Industri' },
+]
+
+const aboutHighlights = [
+  { icon: Target,    title: 'Edukasi Teknologi', desc: 'Mengenalkan tren dan praktik teknologi terkini' },
+  { icon: Handshake, title: 'Networking',         desc: 'Membangun koneksi antar mahasiswa & industri' },
+  { icon: Lightbulb, title: 'Kreativitas',        desc: 'Mendorong inovasi solusi berbasis web' },
+]
+
+const audienceBadges = [
+  { icon: GraduationCap, label: 'Mahasiswa' },
+  { icon: BookOpen,      label: 'Pelajar SMA / SMK' },
+  { icon: Globe,         label: 'Masyarakat Umum' },
 ]
 
 // ── Methods ───────────────────────────────────────────────────────────────────
@@ -109,78 +156,34 @@ onMounted(() => {
   if (params.get('login') === '1')    openModal('login')
   if (params.get('register') === '1') openModal('register')
 
-  requestAnimationFrame(() => {
-    setTimeout(() => { heroVisible.value  = true }, 60)
-    setTimeout(() => { cardsVisible.value = true }, 350)
-  })
+  // Scroll reveal untuk section di bawah hero — aman digerbang IntersectionObserver
+  // karena section-section ini tidak pernah jadi bagian viewport awal / LCP.
+  const groups = document.querySelectorAll('.reveal-group')
+  if ('IntersectionObserver' in window && groups.length) {
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      }
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' })
+    groups.forEach((el) => observer.observe(el))
+  } else {
+    groups.forEach((el) => el.classList.add('is-visible'))
+  }
 })
 </script>
 
 <template>
-  <div class="relative min-h-screen bg-gradient-to-b from-blue-600 via-blue-700 to-blue-900 text-gray-900 font-['Inter',sans-serif] overflow-x-hidden">
+  <!-- Gradient panjang & kontinu: gelap-pekat di hero (mendung) → makin terang
+       menuju Timeline/CTA (cahaya) → tenang lagi di footer. Ini "jalur cerita"
+       visual halaman, bukan tiap section punya background sendiri-sendiri. -->
+  <div class="relative min-h-screen text-gray-900 overflow-x-hidden"
+       style="background: linear-gradient(to bottom,
+              #1e3a8a 0%, #1e40af 20%, #1d4ed8 38%, #2563eb 56%, #3b82f6 74%, #2f5fd0 88%, #1e40af 100%);">
 
-    <!-- ── CLOUD ORNAMENTS LAYER ──────────────────────────────────────────── -->
-    <div class="fixed inset-0 z-[1] pointer-events-none overflow-hidden select-none" aria-hidden="true">
-
-      <!-- Awan Atas Kiri -->
-      <img src="/images/ornaments/awan-tas-kiri.svg"
-           alt=""
-           class="absolute top-0 left-0 w-40 sm:w-56 md:w-72 lg:w-96
-                  opacity-100 -translate-x-4 -translate-y-4"
-           draggable="false" />
-
-      <!-- Awan Atas Kanan -->
-      <img src="/images/ornaments/awan-atas-kanan.svg"
-           alt=""
-           class="absolute top-0 right-0 w-40 sm:w-56 md:w-72 lg:w-96
-                  opacity-100 translate-x-4 -translate-y-4"
-           draggable="false" />
-
-      <!-- Awan Kiri Tengah -->
-      <img src="/images/ornaments/awan-kiri.svg"
-           alt=""
-           class="absolute top-[30%] left-[3%] w-28 sm:w-40 md:w-52
-                  opacity-90"
-           draggable="false" />
-
-      <!-- Awan Kiri Blur (tengah bawah kiri) -->
-      <img src="/images/ornaments/awan-kiri-blur.svg"
-           alt=""
-           class="absolute top-[55%] left-[5%] w-24 sm:w-36 md:w-44
-                  opacity-70"
-           draggable="false" />
-
-      <!-- Awan Kanan Tengah -->
-      <img src="/images/ornaments/awan-kanan.svg"
-           alt=""
-           class="absolute top-[30%] right-[3%] w-28 sm:w-40 md:w-52
-                  opacity-90"
-           draggable="false" />
-
-      <!-- Awan Kanan Blur (tengah bawah kanan) -->
-      <img src="/images/ornaments/awan-kanan-blur.svg"
-           alt=""
-           class="absolute top-[55%] right-[5%] w-24 sm:w-36 md:w-44
-                  opacity-70"
-           draggable="false" />
-
-      <!-- Awan Kiri Bawah -->
-      <img src="/images/ornaments/awan-kiri-bawah.svg"
-           alt=""
-           class="absolute bottom-0 left-0 w-40 sm:w-56 md:w-72 lg:w-96
-                  opacity-100 -translate-x-4 translate-y-4"
-           draggable="false" />
-
-      <!-- Awan Kanan Bawah -->
-      <img src="/images/ornaments/awan-kanan-bawah.svg"
-           alt=""
-           class="absolute bottom-0 right-0 w-40 sm:w-56 md:w-72 lg:w-96
-                  opacity-100 translate-x-4 translate-y-4"
-           draggable="false" />
-
-    </div><!-- end cloud layer -->
-
-    <!-- ── MAIN CONTENT (z-[10] to sit above cloud layer) ───────────────── -->
+    <!-- ── MAIN CONTENT ───────────────────────────────────────────────────── -->
     <div class="relative z-[10]">
 
     <!-- ══════════════════════════════════════════════
@@ -193,7 +196,7 @@ onMounted(() => {
         <!-- Logo -->
         <a href="/" class="flex items-center group flex-shrink-0">
           <span class="text-base font-bold tracking-tight text-white">
-            Soedirman Technophoria
+            Soedirman Technophoria <span class="text-blue-300">'26</span>
           </span>
         </a>
 
@@ -215,7 +218,7 @@ onMounted(() => {
           </button>
           <button @click="openModal('register')" id="nav-register-btn"
                   class="px-4 py-2 text-sm font-semibold rounded-lg
-                         bg-amber-500 hover:bg-amber-400 text-white
+                         bg-amber-500 hover:bg-amber-400 text-blue-950
                          shadow-md shadow-amber-500/30 transition-all duration-200 active:scale-95">
             Daftar
           </button>
@@ -223,6 +226,7 @@ onMounted(() => {
 
         <!-- Mobile hamburger -->
         <button @click="mobileMenuOpen = !mobileMenuOpen" id="mobile-menu-btn"
+                :aria-expanded="mobileMenuOpen" aria-label="Buka menu navigasi"
                 class="md:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5
                        rounded-lg border border-blue-400/30 hover:bg-blue-800 transition-all duration-200">
           <span :class="['block w-5 h-0.5 bg-white rounded transition-all duration-300',
@@ -254,7 +258,7 @@ onMounted(() => {
           <div class="pt-3 flex flex-col gap-2">
             <button @click="openModal('register')"
                     class="w-full py-3 text-sm font-semibold rounded-xl
-                           bg-amber-500 hover:bg-amber-400 text-white transition-all duration-200">
+                           bg-amber-500 hover:bg-amber-400 text-blue-950 transition-all duration-200">
               Daftar Sekarang
             </button>
           </div>
@@ -262,11 +266,50 @@ onMounted(() => {
       </Transition>
     </header>
 
+    <main>
     <!-- ══════════════════════════════════════════════
          HERO
     ═══════════════════════════════════════════════ -->
     <section class="relative flex flex-col items-center justify-center text-center
                     pt-36 pb-24 px-4 sm:px-6 min-h-screen overflow-hidden">
+
+      <!-- Awan — hidup lewat drift halus, hanya di hero (menyatu ke bawah seiring scroll,
+           merepresentasikan "meninggalkan mendung" secara harfiah, bukan lewat opacity trick) -->
+      <div class="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+        <img src="/images/ornaments/awan-tas-kiri.svg" alt=""
+             class="absolute top-0 left-0 w-40 sm:w-56 md:w-72 lg:w-96 -translate-x-4 -translate-y-4
+                    animate-cloud-drift [animation-duration:16s]"
+             draggable="false" />
+        <img src="/images/ornaments/awan-atas-kanan.svg" alt=""
+             class="absolute top-0 right-0 w-40 sm:w-56 md:w-72 lg:w-96 translate-x-4 -translate-y-4
+                    animate-cloud-drift [animation-duration:13s] [animation-delay:-4s]"
+             draggable="false" />
+        <img src="/images/ornaments/awan-kiri.svg" alt=""
+             class="absolute top-[30%] left-[3%] w-28 sm:w-40 md:w-52 opacity-90
+                    animate-cloud-drift [animation-duration:15s] [animation-delay:-8s]"
+             draggable="false" />
+        <img src="/images/ornaments/awan-kiri-blur.svg" alt=""
+             class="absolute top-[55%] left-[5%] w-24 sm:w-36 md:w-44 opacity-70
+                    animate-cloud-drift [animation-duration:18s] [animation-delay:-2s]"
+             draggable="false" />
+        <img src="/images/ornaments/awan-kanan.svg" alt=""
+             class="absolute top-[30%] right-[3%] w-28 sm:w-40 md:w-52 opacity-90
+                    animate-cloud-drift [animation-duration:14s] [animation-delay:-6s]"
+             draggable="false" />
+        <img src="/images/ornaments/awan-kanan-blur.svg" alt=""
+             class="absolute top-[55%] right-[5%] w-24 sm:w-36 md:w-44 opacity-70
+                    animate-cloud-drift [animation-duration:17s] [animation-delay:-10s]"
+             draggable="false" />
+        <img src="/images/ornaments/awan-kiri-bawah.svg" alt=""
+             class="absolute bottom-0 left-0 w-40 sm:w-56 md:w-72 lg:w-96 -translate-x-4 translate-y-4
+                    animate-cloud-drift [animation-duration:15s] [animation-delay:-5s]"
+             draggable="false" />
+        <img src="/images/ornaments/awan-kanan-bawah.svg" alt=""
+             class="absolute bottom-0 right-0 w-40 sm:w-56 md:w-72 lg:w-96 translate-x-4 translate-y-4
+                    animate-cloud-drift [animation-duration:16s] [animation-delay:-9s]"
+             draggable="false" />
+      </div>
+
       <div class="absolute inset-0 pointer-events-none overflow-hidden">
         <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                     w-[600px] h-[400px] md:w-[900px] md:h-[600px]
@@ -279,18 +322,15 @@ onMounted(() => {
                                     linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
                   background-size: 56px 56px;"></div>
 
-      <Transition enter-active-class="transition-all duration-700 ease-out"
-                  enter-from-class="opacity-0 translate-y-8"
-                  enter-to-class="opacity-100 translate-y-0">
-        <div v-if="heroVisible" class="relative z-10 max-w-4xl mx-auto">
-          
+      <div class="relative z-10 max-w-4xl mx-auto">
+
           <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold
-                     tracking-tight leading-[1.05] mb-5 sm:mb-6">
+                     tracking-tight leading-[1.05] mb-5 sm:mb-6 animate-fade-in-up">
             <span class="text-white drop-shadow-lg">Soedirman</span><br>
             <span class="text-amber-300 drop-shadow-lg">Technophoria</span>
           </h1>
           <p class="max-w-2xl mx-auto text-sm sm:text-base md:text-lg text-white/80
-                    leading-relaxed mb-4 px-2">
+                    leading-relaxed mb-4 px-2 animate-fade-in-up [animation-delay:120ms]">
             Event teknologi tahunan yang mempertemukan pelajar SMA/SMK, mahasiswa,
             dan masyarakat umum dalam satu panggung kompetisi dan edukasi.
             Buktikan kemampuanmu di
@@ -298,10 +338,10 @@ onMounted(() => {
             dan perluas wawasanmu lewat
             <span class="text-white font-semibold">Seminar Nasional</span>.
           </p>
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 sm:mt-10">
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 sm:mt-10 animate-fade-in-up [animation-delay:240ms]">
             <button @click="openModal('register')" id="hero-register-btn"
                     class="w-full sm:w-auto px-7 py-3.5 text-sm font-bold rounded-xl
-                           bg-amber-500 hover:bg-amber-400 text-white
+                           bg-amber-500 hover:bg-amber-400 text-blue-950
                            shadow-lg shadow-amber-500/40 hover:shadow-amber-400/50
                            transition-all duration-200 active:scale-[0.98]">
               Daftar Sekarang →
@@ -315,30 +355,62 @@ onMounted(() => {
               Unduh Guidebook
             </a>
           </div>
-          <div class="flex flex-wrap items-center justify-center gap-3 mt-12 sm:mt-14">
-            <span class="px-4 py-2 rounded-full border-2 border-white/50 bg-white/15 text-xs text-white font-semibold backdrop-blur-sm">🎓 Mahasiswa</span>
-            <span class="px-4 py-2 rounded-full border-2 border-white/50 bg-white/15 text-xs text-white font-semibold backdrop-blur-sm">📚 Pelajar SMA / SMK</span>
-            <span class="px-4 py-2 rounded-full border-2 border-white/50 bg-white/15 text-xs text-white font-semibold backdrop-blur-sm">🌐 Masyarakat Umum</span>
+          <div class="flex flex-wrap items-center justify-center gap-3 mt-12 sm:mt-14 animate-fade-in-up [animation-delay:360ms]">
+            <span v-for="badge in audienceBadges" :key="badge.label"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-full border-2 border-white/50 bg-white/15 text-xs text-white font-semibold backdrop-blur-sm">
+              <component :is="badge.icon" :size="14" />
+              {{ badge.label }}
+            </span>
           </div>
-        </div>
-      </Transition>
+      </div>
+
+      <!-- Bintang mulai muncul di bagian bawah hero — jembatan visual:
+           "meninggalkan zona awan, memasuki zona bintang" saat scroll turun -->
+      <div class="absolute inset-x-0 bottom-0 h-1/3 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+        <img v-for="(s, si) in starFieldPool.slice(0, 10)" :key="si" src="/images/ornaments/bintangpx.svg" alt=""
+             class="absolute animate-star-twinkle"
+             :style="{ top: s.top, left: s.left, width: s.size + 'px',
+                       '--star-opacity': s.opacity, '--star-rotate': s.rotate + 'deg',
+                       transform: `rotate(${s.rotate}deg)`, animationDuration: s.duration + 's' }" />
+      </div>
     </section>
 
     <!-- ══════════════════════════════════════════════
          ABOUT
     ═══════════════════════════════════════════════ -->
-    <Transition enter-active-class="transition-all duration-700 ease-out"
-                enter-from-class="opacity-0 translate-y-8"
-                enter-to-class="opacity-100 translate-y-0">
-      <section v-if="cardsVisible" id="about"
-               class="px-4 sm:px-6 py-20 sm:py-24">
-        <div class="max-w-6xl mx-auto">
-          <div class="bg-white border-4 border-white rounded-3xl shadow-2xl p-8 sm:p-12">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <section id="about"
+               class="relative min-h-screen flex flex-col items-center justify-center
+                      px-4 sm:px-6 py-20 sm:py-24 reveal-group">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.06]" aria-hidden="true"
+             style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                                      linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+                    background-size: 56px 56px;"></div>
+        <div class="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+          <img v-for="(s, si) in starFieldPool.slice(2, 16)" :key="si" src="/images/ornaments/bintangpx.svg" alt=""
+               class="absolute animate-star-twinkle"
+               :style="{ top: s.top, left: s.left, width: (s.size * 1.7) + 'px',
+                         '--star-opacity': s.opacity, '--star-rotate': s.rotate + 'deg',
+                         transform: `rotate(${s.rotate}deg)`, animationDuration: s.duration + 's' }" />
+        </div>
+
+        <!-- Sambungan Hero↔Tentang — aset gabungan (awan + beam penghubung) dari desain kamu.
+             viewBox 5326×2486; beam-nya ada di y=1177-1327 (titik tengah ≈50.36% dari tinggi
+             gambar), jadi digeser naik persis segitu supaya beam pas di garis batas
+             hero/About dan awan di atas/bawahnya seimbang & proporsional. -->
+        <img src="/images/ornaments/awan-antar-section.svg" alt=""
+             class="absolute top-0 inset-x-0 w-full h-auto -translate-y-[50.36%] z-[6]"
+             aria-hidden="true" draggable="false" />
+
+        <div class="relative max-w-6xl mx-auto">
+          <div class="relative bg-white border-4 border-white rounded-3xl shadow-2xl p-8 sm:p-12 reveal-item overflow-hidden">
+            <div class="absolute inset-0 pointer-events-none opacity-[0.04]"
+                 style="background-image: radial-gradient(circle, #1e3a8a 1px, transparent 1px); background-size: 22px 22px;"
+                 aria-hidden="true"></div>
+            <div class="relative grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
               <div>
                 <p class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3">Tentang S-Tech</p>
                 <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-900 mb-5 leading-snug">
-                  Ruang Bertumbuh bagi<br>Generasi Teknologi Indonesia
+                  Ruang Bertumbuh bagi<br>Generasi Teknologi
                 </h2>
                 <p class="text-sm sm:text-base text-gray-600 leading-relaxed mb-5">
                   Soedirman Technophoria (S-Tech) adalah event tahunan yang diselenggarakan
@@ -350,17 +422,15 @@ onMounted(() => {
                 </p>
               </div>
               <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
-                <div v-for="(item, i) in [
-                  { icon: '🎯', title: 'Edukasi Teknologi', desc: 'Mengenalkan tren dan praktik teknologi terkini' },
-                  { icon: '🤝', title: 'Networking',         desc: 'Membangun koneksi antar mahasiswa & industri' },
-                  { icon: '💡', title: 'Kreativitas',        desc: 'Mendorong inovasi solusi berbasis web' },
-                ]" :key="i"
-                     class="flex items-start gap-4 p-4 rounded-2xl border-2 border-blue-100
-                            bg-blue-50 hover:bg-blue-100 transition-all duration-300">
-                  <span class="text-2xl flex-shrink-0">{{ item.icon }}</span>
+                <div v-for="item in aboutHighlights" :key="item.title"
+                     class="lift-on-hover flex items-start gap-4 p-4 rounded-2xl border-2 border-blue-100
+                            bg-blue-50 hover:bg-blue-100 hover:border-blue-200 hover:shadow-lg">
+                  <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0">
+                    <component :is="item.icon" :size="17" />
+                  </div>
                   <div>
                     <p class="text-sm font-semibold text-blue-900 mb-0.5">{{ item.title }}</p>
-                    <p class="text-xs text-gray-500 leading-relaxed">{{ item.desc }}</p>
+                    <p class="text-xs text-gray-600 leading-relaxed">{{ item.desc }}</p>
                   </div>
                 </div>
               </div>
@@ -368,151 +438,190 @@ onMounted(() => {
           </div>
         </div>
       </section>
-    </Transition>
 
     <!-- ══════════════════════════════════════════════
-         COMPETITION
+         LOMBA & SEMINAR (digabung — dua panggung, satu section)
     ═══════════════════════════════════════════════ -->
-    <Transition enter-active-class="transition-all duration-700 ease-out delay-75"
-                enter-from-class="opacity-0 translate-y-8"
-                enter-to-class="opacity-100 translate-y-0">
-      <section v-if="cardsVisible" id="competition"
-               class="px-4 sm:px-6 py-20 sm:py-24 max-w-6xl mx-auto">
-        <div class="mb-10 sm:mb-12">
-          <p class="text-xs font-bold text-amber-300 uppercase tracking-widest mb-2">Cabang Lomba</p>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Lomba Web Development</h2>
-          <p class="text-sm sm:text-base text-blue-100 mt-2 max-w-xl">
-            Tunjukkan kemampuan membangun solusi web inovatif di hadapan para juri profesional.
-          </p>
+      <section class="relative px-4 sm:px-6 py-20 sm:py-24 reveal-group overflow-hidden">
+        <div class="absolute inset-0 pointer-events-none opacity-[0.06]" aria-hidden="true"
+             style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                                      linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+                    background-size: 56px 56px;"></div>
+        <!-- Awan sisi kiri/kanan — ditaruh di pinggir sejati (bukan pinggir kartu) supaya
+             mengisi ruang kosong di layar lebar, dengan rotasi & ukuran bervariasi
+             supaya tidak terasa seperti 4 salinan identik. Tidak lagi menempel pas
+             di batas atas/bawah section (dulu kepotong overflow-hidden jadi terlihat
+             seperti "kotak" kecil) — sekarang digeser masuk secukupnya + boleh miring. -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+          <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2
+                      w-[500px] h-[300px] md:w-[850px] md:h-[550px]
+                      bg-white/[0.06] rounded-full blur-3xl"></div>
+          <img src="/images/ornaments/awan-kiri.svg" alt=""
+               class="absolute top-10 sm:top-8 left-0 w-24 sm:w-40 md:w-56 -translate-x-8 sm:-translate-x-10
+                      opacity-85 rotate-[-10deg]
+                      animate-cloud-drift [animation-duration:15s] [animation-delay:-3s]"
+               draggable="false" />
+          <img src="/images/ornaments/awan-kanan.svg" alt=""
+               class="absolute top-16 sm:top-12 right-0 w-20 sm:w-32 md:w-44 translate-x-6 sm:translate-x-8
+                      opacity-85 rotate-[8deg]
+                      animate-cloud-drift [animation-duration:14s] [animation-delay:-7s]"
+               draggable="false" />
+          <img src="/images/ornaments/awan-kiri-blur.svg" alt=""
+               class="absolute bottom-14 sm:bottom-10 left-0 w-16 sm:w-24 md:w-32 -translate-x-6 sm:-translate-x-8
+                      opacity-55 rotate-[16deg]
+                      animate-cloud-drift [animation-duration:17s] [animation-delay:-5s]"
+               draggable="false" />
+          <img src="/images/ornaments/awan-kanan-blur.svg" alt=""
+               class="absolute bottom-8 sm:bottom-6 right-0 w-24 sm:w-36 md:w-48 translate-x-8 sm:translate-x-10
+                      opacity-55 rotate-[-14deg]
+                      animate-cloud-drift [animation-duration:16s] [animation-delay:-9s]"
+               draggable="false" />
+          <img src="/images/ornaments/awan-kiri-blur.svg" alt=""
+               class="absolute top-1/2 left-0 -translate-y-1/2 w-14 sm:w-20 -translate-x-10 sm:-translate-x-12
+                      opacity-30 rotate-[-30deg] hidden sm:block
+                      animate-cloud-drift [animation-duration:19s] [animation-delay:-11s]"
+               draggable="false" />
+          <img src="/images/ornaments/awan-kanan-blur.svg" alt=""
+               class="absolute top-1/2 right-0 -translate-y-1/2 w-14 sm:w-20 translate-x-10 sm:translate-x-12
+                      opacity-30 rotate-[26deg] hidden sm:block
+                      animate-cloud-drift [animation-duration:18s] [animation-delay:-13s]"
+               draggable="false" />
+          <img v-for="(s, si) in starFieldPool.slice(5, 18)" :key="si" src="/images/ornaments/bintangpx.svg" alt=""
+               class="absolute animate-star-twinkle"
+               :style="{ top: s.top, left: s.left, width: s.size + 'px',
+                         '--star-opacity': s.opacity, '--star-rotate': s.rotate + 'deg',
+                         transform: `rotate(${s.rotate}deg)`, animationDuration: s.duration + 's' }" />
         </div>
-        <div class="bg-white border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-8 lg:p-10 mb-6 overflow-hidden">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            <div>
-              
-              <h3 class="text-xl sm:text-2xl md:text-3xl font-bold text-blue-900 mb-4">
-                Web Development<br>
-                <span class="text-blue-600">Challenge 2026</span>
-              </h3>
-              <p class="text-sm text-gray-600 leading-relaxed mb-6">
-                Tunjukkan kemampuan terbaikmu dalam merancang dan membangun
-                aplikasi web yang inovatif, fungsional, dan berdampak nyata.
-              </p>
-              <div class="flex flex-wrap gap-3">
-                <div class="px-4 py-2 rounded-xl border-2 border-blue-100 bg-blue-50">
-                  <p class="text-[10px] text-blue-400 mb-0.5 font-semibold">Peserta</p>
-                  <p class="text-xs font-semibold text-blue-900">SMA/SMK & Mahasiswa</p>
-                </div>
-                <div class="px-4 py-2 rounded-xl border-2 border-blue-100 bg-blue-50">
-                  <p class="text-[10px] text-blue-400 mb-0.5 font-semibold">Format Tim</p>
-                  <p class="text-xs font-semibold text-blue-900">2–3 Orang / Tim</p>
-                </div>
-                <div class="px-4 py-2 rounded-xl border-2 border-blue-100 bg-blue-50">
-                  <p class="text-[10px] text-blue-400 mb-0.5 font-semibold">Biaya Daftar</p>
-                  <p class="text-xs font-semibold text-blue-900">Rp 75.000 / Tim</p>
-                </div>
-              </div>
-            </div>
-            <div class="space-y-4">
-              <div class="p-6 rounded-2xl border-2 border-amber-200 bg-amber-50">
-                <p class="text-xs text-amber-600 mb-2 uppercase tracking-wider font-bold">Total Hadiah</p>
-                <p class="text-4xl font-extrabold text-amber-500 mb-1">Rp 5 Jt+</p>
-                <p class="text-sm text-gray-500">Juara 1 · Juara 2 · Juara 3</p>
-                
-              </div>
 
-              <!-- Tombol Daftar dipindah ke sini, di dalam kotak putih -->
-              <button @click="openModal('register')"
-                      class="w-full py-3.5 text-sm font-bold rounded-xl
-                             bg-amber-500 hover:bg-amber-400 text-white
-                             shadow-lg shadow-amber-500/40 transition-all duration-200 active:scale-[0.98]">
-                Daftar Lomba Sekarang →
-              </button>
-            </div>
-          </div>
+        <div class="relative max-w-6xl mx-auto">
+        <div class="relative mb-8 text-center reveal-item">
+          <p class="text-xs font-bold text-amber-200 uppercase tracking-widest mb-2">Event Utama</p>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Lomba &amp; Seminar Nasional</h2>
+
         </div>
-      </section>
-    </Transition>
 
-    <!-- ══════════════════════════════════════════════
-         SEMINAR
-    ═══════════════════════════════════════════════ -->
-    <Transition enter-active-class="transition-all duration-700 ease-out delay-100"
-                enter-from-class="opacity-0 translate-y-8"
-                enter-to-class="opacity-100 translate-y-0">
-      <section v-if="cardsVisible" id="seminar"
-               class="px-4 sm:px-6 py-20 sm:py-24">
-        <div class="max-w-6xl mx-auto">
-          <div class="mb-10 sm:mb-12">
-            <p class="text-xs font-bold text-amber-300 uppercase tracking-widest mb-2">Acara Pendukung</p>
-            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Seminar Nasional</h2>
-            <p class="text-sm sm:text-base text-blue-100 mt-2 max-w-xl">
-              Sesi eksklusif bersama pembicara dari industri teknologi.
+        <div class="relative grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- LOMBA -->
+          <div id="competition" class="reveal-item bg-white border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col">
+            <p class="text-[11px] font-bold text-blue-500 uppercase tracking-widest mb-2">Lomba</p>
+            <h3 class="text-xl sm:text-2xl font-bold text-blue-900 mb-3">Web Development Challenge 2026</h3>
+            <p class="text-sm text-gray-600 leading-relaxed mb-5">
+              Rancang dan bangun aplikasi web yang inovatif, fungsional, dan berdampak nyata
+              di hadapan para juri profesional.
             </p>
-          </div>
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div class="lg:col-span-2 bg-white border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-8">
-              <div>
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full
-                            border border-blue-200 bg-blue-50 text-blue-700 text-xs font-semibold mb-5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                  Gratis untuk Mahasiswa Unsoed
-                </div>
-                <h3 class="text-xl sm:text-2xl font-bold text-blue-900 mb-3">Teknologi & Karir di Era Digital</h3>
-                <p class="text-sm text-gray-600 leading-relaxed mb-6">
-                  Seminar nasional menghadirkan praktisi dan pakar industri untuk berbagi wawasan
-                  tentang tren teknologi terkini dan peluang karir.
-                </p>
-                <div class="flex flex-wrap gap-3">
-                  <div class="px-4 py-2 rounded-xl border-2 border-blue-100 bg-blue-50">
-                    <p class="text-[10px] text-blue-400 mb-0.5 font-semibold">Tanggal</p>
-                    <p class="text-xs font-semibold text-blue-900">22 Juli 2026</p>
-                  </div>
-                  <div class="px-4 py-2 rounded-xl border-2 border-blue-100 bg-blue-50">
-                    <p class="text-[10px] text-blue-400 mb-0.5 font-semibold">Format</p>
-                    <p class="text-xs font-semibold text-blue-900">Offline · Purwokerto</p>
-                  </div>
-                  <div class="px-4 py-2 rounded-xl border-2 border-blue-100 bg-blue-50">
-                    <p class="text-[10px] text-blue-400 mb-0.5 font-semibold">Sertifikat</p>
-                    <p class="text-xs font-semibold text-blue-900">E-Certificate ✓</p>
-                  </div>
-                </div>
+            <div class="flex flex-wrap gap-2 mb-5">
+              <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
+                <p class="text-[9px] text-blue-600 font-semibold">Peserta</p>
+                <p class="text-xs font-semibold text-blue-900">SMA/SMK &amp; Mahasiswa</p>
+              </div>
+              <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
+                <p class="text-[9px] text-blue-600 font-semibold">Format Tim</p>
+                <p class="text-xs font-semibold text-blue-900">1–4 Orang</p>
+              </div>
+              <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
+                <p class="text-[9px] text-blue-600 font-semibold">Biaya</p>
+                <p class="text-xs font-semibold text-blue-900">Rp 100.000</p>
               </div>
             </div>
-            <div class="bg-white border-4 border-white rounded-3xl shadow-2xl p-6">
-              <p class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-4">Topik Bahasan</p>
-              <div class="space-y-3">
-                <div v-for="topic in seminarTopics" :key="topic.label"
-                     class="flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 transition-all duration-200">
-                  <span class="text-base text-blue-500 flex-shrink-0">{{ topic.icon }}</span>
-                  <p class="text-sm text-gray-700 font-medium">{{ topic.label }}</p>
-                </div>
+
+            <!-- Fokus utama kartu ini -->
+            <div class="relative p-5 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/60
+                        border-2 border-amber-200 shadow-lg shadow-amber-500/10 mb-4">
+              <div class="absolute left-0 top-5 bottom-5 w-1 rounded-full bg-amber-400"></div>
+              <p class="text-xs text-amber-700 mb-1 uppercase tracking-wider font-bold pl-3">Total Hadiah</p>
+              <p class="text-4xl font-extrabold text-amber-700 mb-0.5 pl-3">Rp 5 Jt+</p>
+              <p class="text-sm text-gray-500 pl-3">Juara 1 · Juara 2 · Juara 3</p>
+            </div>
+
+            <button @click="openModal('register')"
+                    class="mt-auto w-full py-3.5 text-sm font-bold rounded-xl
+                           bg-amber-500 hover:bg-amber-400 text-blue-950
+                           shadow-lg shadow-amber-500/40 transition-all duration-200 active:scale-[0.98]">
+              Daftar Lomba Sekarang →
+            </button>
+          </div>
+
+          <!-- SEMINAR -->
+          <div id="seminar" class="reveal-item [transition-delay:120ms] bg-white border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-8 flex flex-col">
+            <p class="text-[11px] font-bold text-blue-500 uppercase tracking-widest mb-2">Seminar Nasional</p>
+            <h3 class="text-xl sm:text-2xl font-bold text-blue-900 mb-3">Teknologi &amp; Karir di Era Digital</h3>
+            <p class="text-sm text-gray-600 leading-relaxed mb-5">
+              Seminar nasional menghadirkan praktisi dan pakar industri untuk berbagi wawasan
+              tentang tren teknologi terkini dan peluang karir.
+            </p>
+            <div class="flex flex-wrap gap-2 mb-5">
+              <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
+                <p class="text-[9px] text-blue-600 font-semibold">Tanggal</p>
+                <p class="text-xs font-semibold text-blue-900">22 Oktober 2045</p>
+              </div>
+              <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
+                <p class="text-[9px] text-blue-600 font-semibold">Format</p>
+                <p class="text-xs font-semibold text-blue-900">Offline</p>
+              </div>
+              <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
+                <p class="text-[9px] text-blue-600 font-semibold">Sertifikat</p>
+                <p class="text-xs font-semibold text-blue-900">E-Certificate</p>
+              </div>
+              <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
+                <p class="text-[9px] text-blue-600 font-semibold">Biaya</p>
+                <p class="text-xs font-semibold text-blue-900">Gratis</p>
+              </div>
+            </div>
+
+            <p class="text-[11px] font-bold text-blue-500 uppercase tracking-wider mb-2">Topik Bahasan</p>
+            <div class="space-y-1 mt-auto">
+              <div v-for="topic in seminarTopics" :key="topic.label"
+                   class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-blue-50 transition-all duration-200">
+                <component :is="topic.icon" :size="16" class="text-blue-500 flex-shrink-0" />
+                <p class="text-sm text-gray-700 font-medium">{{ topic.label }}</p>
               </div>
             </div>
           </div>
         </div>
+        </div>
       </section>
-    </Transition>
 
     <!-- ══════════════════════════════════════════════
          TIMELINE
     ═══════════════════════════════════════════════ -->
-    <Transition enter-active-class="transition-all duration-700 ease-out delay-150"
-                enter-from-class="opacity-0 translate-y-8"
-                enter-to-class="opacity-100 translate-y-0">
-      <section v-if="cardsVisible" id="timeline"
-               class="px-4 sm:px-6 py-20 sm:py-24">
-        <div class="max-w-6xl mx-auto">
-          <div class="mb-10 sm:mb-14 text-center">
-            <p class="text-xs font-bold text-amber-300 uppercase tracking-widest mb-2">Jadwal</p>
+      <section id="timeline"
+               class="relative px-4 sm:px-6 py-20 sm:py-24 reveal-group overflow-hidden">
+        <!-- Foto bersama tim S-Tech — background section, opacity rendah &
+             tepi memudar (mask) supaya menyatu dengan gradient biru sekitarnya. -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+          <img src="/images/fotbar.webp" alt="" loading="lazy"
+               class="w-full h-full object-cover opacity-[0.16] grayscale-[15%]"
+               style="mask-image: radial-gradient(ellipse 75% 70% at center, black 35%, transparent 100%);
+                      -webkit-mask-image: radial-gradient(ellipse 75% 70% at center, black 35%, transparent 100%);"
+               draggable="false" />
+        </div>
+        <div class="absolute inset-0 pointer-events-none opacity-[0.06]" aria-hidden="true"
+             style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                                      linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+                    background-size: 56px 56px;"></div>
+        <div class="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+          <img v-for="(s, si) in starFieldPool.slice(9, 20)" :key="si" src="/images/ornaments/bintangpx.svg" alt=""
+               class="absolute animate-star-twinkle"
+               :style="{ top: s.top, left: s.left, width: s.size + 'px',
+                         '--star-opacity': s.opacity, '--star-rotate': s.rotate + 'deg',
+                         transform: `rotate(${s.rotate}deg)`, animationDuration: s.duration + 's' }" />
+        </div>
+        <div class="relative max-w-6xl mx-auto">
+          <div class="mb-10 sm:mb-14 text-center reveal-item">
+            <p class="text-xs font-bold text-amber-200 uppercase tracking-widest mb-2">Jadwal</p>
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Timeline Acara</h2>
           </div>
-          <div class="bg-white border-4 border-white rounded-3xl shadow-2xl p-8">
-            <div class="hidden md:flex items-start relative">
-              <div class="absolute top-5 left-0 right-0 h-0.5 bg-blue-100"></div>
+          <div class="reveal-item [transition-delay:120ms] bg-white border-4 border-white rounded-3xl shadow-2xl p-6 sm:p-8">
+
+            <!-- Mobile: vertical timeline — titik terakhir (Grand Final) ditandai emas -->
+            <div class="md:hidden relative pl-2">
+              <div class="absolute top-1 bottom-1 left-[19px] w-0.5 bg-gradient-to-b from-blue-100 to-amber-300"></div>
               <div v-for="(item, i) in timeline" :key="i"
-                   class="relative flex flex-col items-center text-center flex-1 px-2">
-                <div :class="['w-10 h-10 rounded-full border-2 flex items-center justify-center z-10 mb-4',
+                   class="relative flex items-start gap-4 pb-7 last:pb-0">
+                <div :class="['relative z-10 flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center',
                               item.done ? 'border-green-500 bg-green-500 shadow-lg shadow-green-500/30'
+                              : i === timeline.length - 1 ? 'border-amber-400 bg-amber-50 shadow-lg shadow-amber-400/30'
                               : i === 1 ? 'border-blue-500 bg-blue-500 ring-4 ring-blue-100'
                               : 'border-blue-200 bg-white']">
                   <svg v-if="item.done" class="w-4 h-4 text-white"
@@ -520,14 +629,44 @@ onMounted(() => {
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
                   <span v-else class="text-xs font-bold"
-                        :class="i === 1 ? 'text-white' : 'text-blue-300'">{{ i + 1 }}</span>
+                        :class="i === 1 ? 'text-white' : i === timeline.length - 1 ? 'text-amber-500' : 'text-blue-300'">{{ i + 1 }}</span>
+                </div>
+                <div class="pt-2">
+                  <p class="text-sm font-semibold leading-snug"
+                     :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-600 font-bold' : i === 1 ? 'text-blue-700 font-bold' : 'text-gray-500'">
+                    {{ item.label }}
+                  </p>
+                  <p class="text-xs mt-1"
+                     :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-500' : 'text-gray-500'">
+                    {{ item.date }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Desktop: baris sejajar — titik terakhir (Grand Final) ditandai emas -->
+            <div class="hidden md:flex items-start relative">
+              <div class="absolute top-5 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-100 via-blue-100 to-amber-300"></div>
+              <div v-for="(item, i) in timeline" :key="i"
+                   class="relative flex flex-col items-center text-center flex-1 px-2">
+                <div :class="['w-10 h-10 rounded-full border-2 flex items-center justify-center z-10 mb-4',
+                              item.done ? 'border-green-500 bg-green-500 shadow-lg shadow-green-500/30'
+                              : i === timeline.length - 1 ? 'border-amber-400 bg-amber-50 shadow-lg shadow-amber-400/40'
+                              : i === 1 ? 'border-blue-500 bg-blue-500 ring-4 ring-blue-100'
+                              : 'border-blue-200 bg-white']">
+                  <svg v-if="item.done" class="w-4 h-4 text-white"
+                       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span v-else class="text-xs font-bold"
+                        :class="i === 1 ? 'text-white' : i === timeline.length - 1 ? 'text-amber-500' : 'text-blue-300'">{{ i + 1 }}</span>
                 </div>
                 <p class="text-xs font-semibold leading-snug"
-                   :class="item.done ? 'text-green-600' : i === 1 ? 'text-blue-700 font-bold' : 'text-gray-400'">
+                   :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-600 font-bold' : i === 1 ? 'text-blue-700 font-bold' : 'text-gray-500'">
                   {{ item.label }}
                 </p>
                 <p class="text-[10px] mt-1.5"
-                   :class="item.done ? 'text-green-400' : 'text-gray-300'">
+                   :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-500' : 'text-gray-500'">
                   {{ item.date }}
                 </p>
               </div>
@@ -535,19 +674,63 @@ onMounted(() => {
           </div>
         </div>
       </section>
-    </Transition>
 
     <!-- ══════════════════════════════════════════════
          CTA BANNER
     ═══════════════════════════════════════════════ -->
-    <Transition enter-active-class="transition-all duration-700 ease-out delay-200"
-                enter-from-class="opacity-0 translate-y-8"
-                enter-to-class="opacity-100 translate-y-0">
-      <section v-if="cardsVisible" class="px-4 sm:px-6 py-16 sm:py-20">
-        <div class="max-w-3xl mx-auto text-center">
+      <section class="relative px-4 sm:px-6 py-16 sm:py-20 overflow-hidden reveal-group">
+        <!-- Foto juara 1/2/3 — mengintip di belakang kartu CTA, opacity rendah &
+             tepi memudar (mask) supaya menyatu ke background, bukan tempelan kotak. -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden select-none" aria-hidden="true">
+          <img src="/images/juara1.webp" alt="" loading="lazy"
+               class="absolute -top-10 -left-8 sm:top-0 sm:left-2 md:left-8
+                      w-44 sm:w-60 md:w-72 aspect-[4/3] object-cover rounded-3xl
+                      opacity-[0.11] grayscale-[20%] -rotate-6"
+               style="mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);
+                      -webkit-mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);"
+               draggable="false" />
+          <img src="/images/juara3.webp" alt="" loading="lazy"
+               class="absolute -top-8 -right-10 sm:top-0 sm:right-2 md:right-10
+                      w-40 sm:w-56 md:w-64 aspect-[4/3] object-cover rounded-3xl
+                      opacity-[0.1] grayscale-[20%] rotate-4"
+               style="mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);
+                      -webkit-mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);"
+               draggable="false" />
+          <img src="/images/juara2.webp" alt="" loading="lazy"
+               class="absolute -bottom-12 left-1/4 sm:-bottom-6 sm:left-8 md:left-20
+                      w-48 sm:w-64 md:w-72 aspect-[4/3] object-cover rounded-3xl
+                      opacity-[0.11] grayscale-[20%] rotate-3"
+               style="mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);
+                      -webkit-mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);"
+               draggable="false" />
+          <!-- Foto "po" — di pojok kanan-bawah, cermin dari juara2 di kiri-bawah,
+               supaya sisi kanan sama-sama membentang penuh (atas→bawah) seperti sisi kiri. -->
+          <img src="/images/po.webp" alt="" loading="lazy"
+               class="absolute -bottom-10 -right-8 sm:-bottom-4 sm:right-6 md:right-16
+                      w-40 sm:w-52 md:w-60 aspect-[3/2] object-cover rounded-3xl
+                      opacity-[0.1] grayscale-[20%] -rotate-5"
+               style="mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);
+                      -webkit-mask-image: radial-gradient(ellipse 65% 65% at center, black 30%, transparent 100%);"
+               draggable="false" />
+        </div>
+        <div class="absolute inset-0 pointer-events-none opacity-[0.06]" aria-hidden="true"
+             style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+                                      linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+                    background-size: 56px 56px;"></div>
+        <!-- Titik "menembus cahaya" — puncak dari perjalanan gradient halaman -->
+        <div class="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+                      w-[700px] h-[500px] bg-amber-300/25 rounded-full blur-[110px]"></div>
+          <img v-for="(s, si) in starFieldPool.slice(13, 24)" :key="si" src="/images/ornaments/bintangpx.svg" alt=""
+               class="absolute animate-star-twinkle"
+               :style="{ top: s.top, left: s.left, width: s.size + 'px',
+                         '--star-opacity': s.opacity, '--star-rotate': s.rotate + 'deg',
+                         transform: `rotate(${s.rotate}deg)`, animationDuration: s.duration + 's' }" />
+        </div>
+        <div class="relative max-w-3xl mx-auto text-center reveal-item">
           <div class="bg-white border-4 border-white rounded-3xl shadow-2xl p-8 sm:p-12">
             <div>
-              <p class="text-xs font-bold text-amber-500 uppercase tracking-widest mb-3">Bergabung Sekarang</p>
+              <p class="text-xs font-bold text-amber-700 uppercase tracking-widest mb-3">Bergabung Sekarang</p>
               <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-900 mb-3">
                 Siap Menunjukkan Kemampuanmu?
               </h2>
@@ -557,7 +740,7 @@ onMounted(() => {
               </p>
               <button @click="openModal('register')" id="cta-register-btn"
                       class="px-8 sm:px-10 py-3.5 text-sm font-bold rounded-xl
-                             bg-amber-500 hover:bg-amber-400 text-white
+                             bg-amber-500 hover:bg-amber-400 text-blue-950
                              shadow-xl shadow-amber-500/40 hover:shadow-amber-400/50
                              transition-all duration-200 active:scale-[0.98]">
                 Daftar Sekarang →
@@ -566,7 +749,7 @@ onMounted(() => {
           </div>
         </div>
       </section>
-    </Transition>
+    </main>
 
     <!-- ══════════════════════════════════════════════
          FOOTER
@@ -606,10 +789,12 @@ onMounted(() => {
             <div class="sm:hidden w-10 h-1 rounded-full bg-blue-200 mx-auto mt-4 mb-2 flex-shrink-0"></div>
 
             <!-- Close btn -->
-            <button @click="closeModal" id="modal-close-btn"
+            <button @click="closeModal" id="modal-close-btn" aria-label="Tutup"
                     class="absolute top-4 right-4 w-7 h-7 rounded-lg z-10
-                           border border-gray-200 text-gray-400 hover:text-gray-700 hover:bg-gray-100
-                           flex items-center justify-center text-xs transition-all duration-200">✕</button>
+                           border border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-100
+                           flex items-center justify-center transition-all duration-200">
+              <X :size="14" />
+            </button>
 
             <!-- Tab switcher -->
             <div class="flex border-b border-gray-200 mt-2 sm:mt-0 flex-shrink-0">
@@ -617,14 +802,14 @@ onMounted(() => {
                       :class="['flex-1 py-4 text-sm font-semibold transition-all duration-200',
                                modalTab === 'login'
                                  ? 'text-blue-700 border-b-2 border-blue-600'
-                                 : 'text-gray-400 hover:text-gray-600']">
+                                 : 'text-gray-500 hover:text-gray-600']">
                 Masuk
               </button>
               <button @click="modalTab = 'register'"
                       :class="['flex-1 py-4 text-sm font-semibold transition-all duration-200',
                                modalTab === 'register'
                                  ? 'text-blue-700 border-b-2 border-blue-600'
-                                 : 'text-gray-400 hover:text-gray-600']">
+                                 : 'text-gray-500 hover:text-gray-600']">
                 Daftar
               </button>
             </div>
@@ -633,7 +818,7 @@ onMounted(() => {
             <div v-if="modalTab === 'login'" class="p-6 sm:p-8 overflow-y-auto">
               <div class="mb-6">
                 <p class="text-sm font-bold leading-none text-blue-900">Soedirman Technophoria</p>
-                <p class="text-[10px] text-gray-400 mt-1">Portal Peserta</p>
+                <p class="text-[10px] text-gray-500 mt-1">Portal Peserta</p>
               </div>
               <h3 class="text-xl font-bold text-blue-900 mb-1">Masuk ke Akunmu</h3>
               <p class="text-sm text-gray-500 mb-6">Lanjutkan proses pendaftaranmu.</p>
@@ -663,7 +848,7 @@ onMounted(() => {
                 </div>
                 <button type="submit" id="login-submit-btn" :disabled="loginForm.loading"
                         class="w-full py-3 rounded-xl text-sm font-bold
-                               bg-amber-500 hover:bg-amber-400 text-white
+                               bg-amber-500 hover:bg-amber-400 text-blue-950
                                shadow-lg shadow-amber-500/30 transition-all duration-200
                                active:scale-[0.98] disabled:opacity-60
                                flex items-center justify-center gap-2 mt-2">
@@ -674,7 +859,7 @@ onMounted(() => {
                   {{ loginForm.loading ? 'Memproses...' : 'Masuk ke Dashboard' }}
                 </button>
               </form>
-              <p class="mt-5 text-center text-xs text-gray-400">
+              <p class="mt-5 text-center text-xs text-gray-500">
                 Belum punya akun?
                 <button @click="modalTab = 'register'" class="text-blue-600 hover:text-blue-500 underline font-semibold">Daftar di sini</button>
               </p>
@@ -734,7 +919,7 @@ onMounted(() => {
                 <!-- Divider -->
                 <div class="flex items-center gap-3 py-1">
                   <div class="flex-1 h-px bg-gray-200"></div>
-                  <span class="text-xs text-gray-400 font-semibold">Info Tim</span>
+                  <span class="text-xs text-gray-500 font-semibold">Info Tim</span>
                   <div class="flex-1 h-px bg-gray-200"></div>
                 </div>
 
@@ -765,8 +950,10 @@ onMounted(() => {
                     <select v-model="registerForm.member_count"
                             class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800
                                    focus:outline-none focus:border-blue-500 transition-all duration-200">
+                      <option :value="1">1 Orang</option>
                       <option :value="2">2 Orang</option>
                       <option :value="3">3 Orang</option>
+                      <option :value="4">4 Orang</option>
                     </select>
                   </div>
                 </div>
@@ -792,14 +979,15 @@ onMounted(() => {
                 </div>
 
                 <!-- Biaya info -->
-                <div class="px-4 py-3 rounded-xl border-2 border-amber-200 bg-amber-50 text-xs text-amber-700">
-                  💳 Biaya pendaftaran: <strong>Rp 75.000 / tim</strong>. Bukti transfer diunggah setelah daftar.
+                <div class="flex items-start gap-2 px-4 py-3 rounded-xl border-2 border-amber-200 bg-amber-50 text-xs text-amber-700">
+                  <CreditCard :size="14" class="flex-shrink-0 mt-0.5" />
+                  <span>Biaya pendaftaran: <strong>Rp 75.000 / tim</strong>. Bukti transfer diunggah setelah daftar.</span>
                 </div>
 
                 <!-- Submit -->
                 <button type="submit" id="register-submit-btn" :disabled="registerForm.loading"
                         class="w-full py-3 rounded-xl text-sm font-bold
-                               bg-amber-500 hover:bg-amber-400 text-white
+                               bg-amber-500 hover:bg-amber-400 text-blue-950
                                shadow-lg shadow-amber-500/30 transition-all duration-200
                                active:scale-[0.98] disabled:opacity-60
                                flex items-center justify-center gap-2">
@@ -810,7 +998,7 @@ onMounted(() => {
                   {{ registerForm.loading ? 'Mendaftarkan...' : 'Daftar Sekarang' }}
                 </button>
               </form>
-              <p class="mt-5 text-center text-xs text-gray-400">
+              <p class="mt-5 text-center text-xs text-gray-500">
                 Sudah punya akun?
                 <button @click="modalTab = 'login'" class="text-blue-600 hover:text-blue-500 underline font-semibold">Masuk</button>
               </p>
@@ -824,7 +1012,3 @@ onMounted(() => {
     </div><!-- end main content wrapper -->
   </div>
 </template>
-
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-</style>

@@ -10,11 +10,12 @@ class DashboardController extends Controller
 {
     public function index(): Response
     {
-        $user = Auth::user()->load(['registration.payment', 'registration.submission']);
+        $user = Auth::user()->load(['registration.payment', 'registration.submission', 'registration.teamMembers']);
 
         $registration = $user->registration;
         $payment      = $registration?->payment;
         $submission   = $registration?->submission;
+        $teamMembers  = $registration?->teamMembers ?? collect();
 
         $finalists = \App\Models\Registration::where('is_finalist', true)
             ->with(['submission'])
@@ -48,6 +49,18 @@ class DashboardController extends Controller
                 'created_at'   => $registration->created_at->format('d M Y'),
                 'is_finalist'  => (bool) $registration->is_finalist,
             ] : null,
+            'teamMembers' => $teamMembers->map(fn ($m) => [
+                'position'        => $m->position,
+                'is_leader'       => $m->is_leader,
+                'full_name'       => $m->full_name,
+                'identity_number' => $m->identity_number,
+                'institution'     => $m->institution,
+                'major'           => $m->major,
+                'batch'           => $m->batch,
+                'phone'           => $m->phone,
+                'email'           => $m->email,
+            ]),
+            'teamMembersComplete' => $registration ? $teamMembers->count() === $registration->member_count : false,
             'payment' => $payment ? [
                 'id'                => $payment->id,
                 'original_filename' => $payment->original_filename,

@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "stech-serve",
+      "runtimeExecutable": "C:\\php84\\php.exe",
+      "runtimeArgs": ["artisan", "serve"],
+      "port": 8000
+    },
+    {
+      "name": "stech-vite",
+      "runtimeExecutable": "cmd.exe",
+      "runtimeArgs": ["/c", "C:\\Users\\MSI\\Documents\\project\\2026\\stech\\.claude\\vite-dev.bat"],
+      "port": 5173
+    }
+  ]
+}
