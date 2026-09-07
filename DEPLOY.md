@@ -109,6 +109,77 @@ dengan CSS, dan `/admin/login` menampilkan form login Filament.
 
 ---
 
+## ⚠️ MASALAH AKTIF: antivirus server menghapus asset Filament
+
+**Status: panel admin `/admin` belum bisa dipakai di server.** Halaman depan
+(publik) berjalan normal — masalah ini hanya menimpa panel admin.
+
+### Gejala
+
+Login admin berhasil, tapi yang tampil hanya bar atas ("S-Tech Admin" + kotak
+pencarian). Sidebar dan isi dashboard kosong hitam.
+
+### Penyebab
+
+Server menjalankan antivirus real-time **Linux Malware Detect (maldet) +
+ClamAV** yang memantau folder web dan menghapus otomatis beberapa file
+JavaScript milik Filament & Livewire. File-file berikut hilang sendiri
+~2 menit setelah dibuat:
+
+```
+public/js/filament/filament/app.js          <- wajib, ini yang merender sidebar
+public/js/filament/filament/echo.js
+public/js/filament/forms/components/code-editor.js
+public/js/filament/forms/components/file-upload.js
+public/js/filament/forms/components/markdown-editor.js
+public/js/filament/forms/components/rich-editor.js
+public/vendor/livewire/livewire.min.js      <- wajib, tanpa ini Filament mati
+```
+
+### Bukti (uji terkontrol 7 Sep 2026)
+
+| Uji | Hasil |
+|---|---|
+| File di-restore, diakses langsung | HTTP 200 (normal) |
+| File yang sama, 2 menit kemudian | HTTP 404 (sudah terhapus) |
+| Salinan dengan **nama berbeda** (`uji-nama-beda.js`) | dihapus |
+| Salinan dengan **ekstensi .txt** | dihapus |
+| Salinan identik di **luar folder web** (`~/tmp/`) | **bertahan** |
+| `clamdscan` manual pada file sumber | **bersih / 0 infected** |
+
+Kesimpulan: pemicunya **isi file**, bukan nama atau ekstensi, dan hanya
+berlaku di dalam folder web. Karena scan manual menyatakan bersih, ini
+**false positive** pada file library open-source resmi.
+
+Log yang relevan (`/usr/local/maldetect/logs/event_log`) menunjukkan monitor
+memindai tiap ~30 detik.
+
+### Solusi
+
+Ini **tidak bisa diperbaiki dari sisi aplikasi** — butuh akses root. Yang perlu
+diminta ke admin server FT Unsoed:
+
+> Mohon tambahkan pengecualian (whitelist) pada maldet/ClamAV untuk folder
+> `/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id/public/js/` dan
+> `/public/vendor/`. File JavaScript milik framework Filament & Livewire
+> terdeteksi keliru sebagai malware lalu dihapus otomatis, sehingga panel
+> admin tidak bisa berjalan. Pemindaian manual dengan `clamdscan` menyatakan
+> file-file tersebut bersih.
+
+Pada maldet, pengecualian diletakkan di `/usr/local/maldetect/ignore_paths`,
+lalu `maldet --monitor users` di-restart.
+
+Setelah di-whitelist, jalankan ulang di server:
+
+```bash
+cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
+git checkout -- public/js/
+php artisan livewire:publish --assets
+php artisan filament:assets
+```
+
+---
+
 ## Troubleshooting
 
 | Gejala | Penyebab & solusi |
