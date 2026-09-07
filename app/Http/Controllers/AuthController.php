@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Registration;
 use App\Models\User;
+use App\Support\EventSchedule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +28,15 @@ class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
+        // Dicek di server, bukan hanya menyembunyikan tombol di halaman depan,
+        // supaya pendaftaran di luar jadwal tetap tertolak walau request
+        // dikirim langsung.
+        if (! EventSchedule::registrationIsOpen()) {
+            return back()->withErrors([
+                'registration_closed' => EventSchedule::registrationMessage(),
+            ])->withInput();
+        }
+
         $data = $request->validate([
             'name'         => ['required', 'string', 'max:100'],
             'email'        => ['required', 'email', 'unique:users,email'],

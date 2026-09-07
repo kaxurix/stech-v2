@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Submission;
+use App\Support\EventSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,6 +11,11 @@ class SubmissionController extends Controller
 {
     public function upload(Request $request)
     {
+        if (! EventSchedule::submissionIsOpen()) {
+            return back()->with('error', 'Batas pengumpulan karya sudah lewat pada '
+                .EventSchedule::submissionClosesAt()->translatedFormat('j F Y').'.');
+        }
+
         $request->validate([
             'project_title' => 'required|string|max:255',
             'github_url'    => 'required|url|max:255',

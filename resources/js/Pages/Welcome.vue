@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import {
   X, GraduationCap, BookOpen, Globe, Target, Handshake, Lightbulb,
@@ -24,6 +24,16 @@ interface RegisterForm {
 
 // ── Page props ────────────────────────────────────────────────────────────────
 const page = usePage()
+
+// ── Status jadwal pendaftaran ─────────────────────────────────────────────────
+// Dibagikan dari HandleInertiaRequests; sumbernya config/stech.php. Server tetap
+// menolak pendaftaran di luar jadwal, ini hanya agar tombolnya ikut menyesuaikan.
+const registration = computed(() => (page.props.registration ?? {
+  status: 'open', is_open: true, message: null,
+}) as { status: string; is_open: boolean; message: string | null })
+
+const registrationOpen = computed(() => registration.value.is_open)
+const registrationNotice = computed(() => registration.value.message)
 
 // ── State ─────────────────────────────────────────────────────────────────────
 const showModal     = ref(false)
@@ -106,7 +116,14 @@ const audienceBadges = [
 
 // ── Methods ───────────────────────────────────────────────────────────────────
 function openModal(tab: 'login' | 'register' = 'login') {
-  modalTab.value = tab
+  // Di luar jadwal, form pendaftaran tidak dibuka sama sekali — peserta
+  // langsung diarahkan ke tab masuk supaya yang sudah punya akun tetap bisa
+  // melanjutkan prosesnya.
+  if (tab === 'register' && !registrationOpen.value) {
+    modalTab.value = 'login'
+  } else {
+    modalTab.value = tab
+  }
   showModal.value = true
   mobileMenuOpen.value = false
   loginForm.value.error = ''
@@ -345,6 +362,12 @@ onMounted(() => {
             <span class="text-white font-semibold">Lomba Web Development</span>
             dan perluas wawasanmu lewat
             <span class="text-white font-semibold">Seminar Nasional</span>.
+          </p>
+          <p v-if="registrationNotice"
+             class="max-w-xl mx-auto mb-2 px-4 py-2.5 rounded-xl text-sm font-medium
+                    border border-amber-300/50 bg-amber-400/15 text-amber-100
+                    animate-fade-in-up [animation-delay:180ms]">
+            {{ registrationNotice }}
           </p>
           <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 sm:mt-10 animate-fade-in-up [animation-delay:240ms]">
             <button @click="openModal('register')" id="hero-register-btn"
@@ -827,11 +850,15 @@ onMounted(() => {
                                  : 'text-gray-500 hover:text-gray-600']">
                 Masuk
               </button>
-              <button @click="modalTab = 'register'"
+              <button @click="registrationOpen && (modalTab = 'register')"
+                      :disabled="!registrationOpen"
+                      :title="registrationNotice ?? ''"
                       :class="['flex-1 py-4 text-sm font-semibold transition-all duration-200',
-                               modalTab === 'register'
-                                 ? 'text-blue-700 border-b-2 border-blue-600'
-                                 : 'text-gray-500 hover:text-gray-600']">
+                               !registrationOpen
+                                 ? 'text-gray-300 cursor-not-allowed'
+                                 : modalTab === 'register'
+                                   ? 'text-blue-700 border-b-2 border-blue-600'
+                                   : 'text-gray-500 hover:text-gray-600']">
                 Daftar
               </button>
             </div>
@@ -881,9 +908,12 @@ onMounted(() => {
                   {{ loginForm.loading ? 'Memproses...' : 'Masuk ke Dashboard' }}
                 </button>
               </form>
-              <p class="mt-5 text-center text-xs text-gray-500">
+              <p v-if="registrationOpen" class="mt-5 text-center text-xs text-gray-500">
                 Belum punya akun?
                 <button @click="modalTab = 'register'" class="text-blue-600 hover:text-blue-500 underline font-semibold">Daftar di sini</button>
+              </p>
+              <p v-else class="mt-5 text-center text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg py-2 px-3">
+                {{ registrationNotice }}
               </p>
             </div>
 

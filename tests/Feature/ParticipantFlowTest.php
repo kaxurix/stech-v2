@@ -16,6 +16,22 @@ class ParticipantFlowTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Secara default jadwal dibuat sedang berlangsung, supaya test alur peserta
+     * tidak ikut gagal hanya karena tanggal asli hari ini berada di luar
+     * periode pendaftaran. Test yang memang menguji jadwal menimpanya sendiri.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config([
+            'stech.registration.opens_at' => now()->subDay()->toDateTimeString(),
+            'stech.registration.closes_at' => now()->addMonth()->toDateTimeString(),
+            'stech.submission.closes_at' => now()->addMonth()->toDateTimeString(),
+        ]);
+    }
+
     private function registerPayload(array $overrides = []): array
     {
         return array_merge([
@@ -66,6 +82,48 @@ class ParticipantFlowTest extends TestCase
         $this->assertSame('peserta', $user->role);
         $this->assertSame('pending_payment', $user->registration->status);
         $this->assertSame('Tim Garuda', $user->registration->team_name);
+    }
+
+    public function test_registration_is_rejected_before_the_schedule_opens(): void
+    {
+        config([
+            'stech.registration.opens_at' => now()->addWeek()->toDateTimeString(),
+            'stech.registration.closes_at' => now()->addMonth()->toDateTimeString(),
+        ]);
+
+        $this->post('/register', $this->registerPayload())
+            ->assertSessionHasErrors('registration_closed');
+
+        $this->assertGuest();
+        $this->assertSame(0, User::count());
+    }
+
+    public function test_registration_is_rejected_after_the_schedule_closes(): void
+    {
+        config([
+            'stech.registration.opens_at' => now()->subMonth()->toDateTimeString(),
+            'stech.registration.closes_at' => now()->subDay()->toDateTimeString(),
+        ]);
+
+        $this->post('/register', $this->registerPayload())
+            ->assertSessionHasErrors('registration_closed');
+
+        $this->assertSame(0, User::count());
+    }
+
+    public function test_submission_is_rejected_after_the_deadline(): void
+    {
+        config(['stech.submission.closes_at' => now()->subDay()->toDateTimeString()]);
+
+        $user = $this->verifiedParticipant();
+
+        $this->actingAs($user)->post('/submission/upload', [
+            'project_title' => 'Proyek Telat',
+            'github_url' => 'https://github.com/contoh/telat',
+            'description' => 'Dikumpulkan lewat batas waktu.',
+        ]);
+
+        $this->assertSame(0, Submission::count());
     }
 
     /**

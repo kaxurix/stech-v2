@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\EventSchedule;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -52,6 +53,9 @@ class HandleInertiaRequests extends Middleware
             'errors' => $request->session()->get('errors')
                 ? $request->session()->get('errors')->getBag('default')->toArray()
                 : (object) [],
+            // Status jadwal pendaftaran, dipakai halaman depan untuk
+            // menonaktifkan tombol daftar di luar periode.
+            'registration' => EventSchedule::toArray(),
         ];
     }
 }
