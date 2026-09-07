@@ -218,11 +218,29 @@ pengumuman. Begitu rekening sudah ada, ubah di
 [`resources/js/Pages/Dashboard.vue`](resources/js/Pages/Dashboard.vue) — cari
 kata `Menyusul` — lalu `npm run build` dan ulangi Langkah 1–6.
 
-### 4. Pendaftaran tidak menutup otomatis
+### 4. Jadwal pendaftaran sudah otomatis
 
-Belum ada pembatasan tanggal. Setelah 11 Oktober, pendaftaran dan submit karya
-**masih bisa masuk**. Perlu ditutup manual, atau minta ditambahkan pembatasan
-tanggal.
+Pendaftaran hanya menerima pendaftar **11 Sep – 11 Okt 2026**, dan pengumpulan
+karya ditutup **11 Okt 2026**. Di luar itu, halaman depan menampilkan
+keterangan dan tombol daftar dinonaktifkan — server juga menolak walau ada yang
+mencoba mengirim data langsung.
+
+> **Yang perlu diperhatikan saat deploy:** hari ini pendaftaran **belum dibuka**
+> (baru mulai 11 Sep). Jadi setelah deploy, wajar kalau halaman depan
+> menampilkan *"Pendaftaran dibuka mulai 11 September 2026"* dan tombol daftar
+> tidak bisa diklik. Itu bukan error.
+
+Kalau jadwal berubah, **tidak perlu ubah kode** — cukup tambahkan di `.env`
+server lalu jalankan `php artisan config:cache`:
+
+```
+STECH_REG_OPENS_AT="2026-09-11 00:00:00"
+STECH_REG_CLOSES_AT="2026-10-18 23:59:59"
+STECH_SUBMISSION_CLOSES_AT="2026-10-18 23:59:59"
+```
+
+Untuk membuka pendaftaran lebih awal saat uji coba, ubah `STECH_REG_OPENS_AT`
+ke tanggal yang sudah lewat.
 
 ### 5. Jangan jalankan seeder demo di server
 
