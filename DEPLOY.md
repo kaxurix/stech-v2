@@ -1,89 +1,135 @@
-# Alur Deploy ke stech.ft.unsoed.ac.id
+# Tutorial Deploy ke stech.ft.unsoed.ac.id
 
-Panduan upload aplikasi dari laptop ke server kampus.
-Alur di bawah **sudah diuji dan berhasil** pada 7 September 2026.
+Panduan langkah demi langkah untuk mengunggah aplikasi dari laptop ke server
+kampus. Alur ini **sudah pernah dijalankan dan berhasil** (7 September 2026).
 
----
-
-## Kondisi server (terverifikasi)
-
-| | |
-|---|---|
-| Path aplikasi | `/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id` |
-| SSH | `unsoed-stech-ft@stech.ft.unsoed.ac.id` (port 22) |
-| Web server | nginx (native) |
-| **Docker** | **TIDAK dipakai.** `docker-compose.yml` & `Dockerfile` di repo hanya sisa percobaan lama — abaikan saja |
-| PHP | 8.4.22 |
-| Composer | 2.9.3 |
-| Node | 18.19.1 — **terlalu tua untuk Vite 8**, jadi build wajib dari laptop |
-| Git | repo aktif, remote `github.com/kaxurix/stech-v2`, branch `main` |
-| Database | `stech-db`, user `stech`, host `stech.ft.unsoed.ac.id:3306` |
-| `.env` server | sudah benar — **jangan ditimpa** |
-
-> **Hanya bisa dari jaringan kampus.** Di dalam kampus, domain resolve ke IP
-> internal `172.25.0.65` dan port 22 terbuka. Dari luar (wifi rumah), resolve ke
-> IP publik `103.9.22.82` yang port SSH-nya ditutup — SSH akan gagal.
-
-> `.env` di server sudah dikonfigurasi benar, jadi [`.env.production`](.env.production)
-> di repo hanya acuan/cadangan. Tidak perlu diupload.
+Perkiraan waktu: 10–15 menit.
 
 ---
 
-## Alur deploy
+## SEBELUM MULAI — 3 syarat wajib
 
-### 1. Di laptop — build & push
+**1. Harus terhubung wifi kampus Unsoed.**
+SSH hanya bisa dari jaringan kampus. Dari wifi rumah, koneksi akan ditolak
+(`Connection refused`) karena domain resolve ke IP publik yang portnya ditutup.
+
+Cek cepat dari terminal:
 
 ```bash
+ssh unsoed-stech-ft@stech.ft.unsoed.ac.id "echo BERHASIL"
+```
+
+Kalau muncul `BERHASIL`, kamu siap. Kalau `Connection refused`, kamu belum di
+jaringan kampus.
+
+**2. Siapkan kredensial**
+
+| Keperluan | Nilai |
+|---|---|
+| SSH user | `unsoed-stech-ft` |
+| SSH host | `stech.ft.unsoed.ac.id` |
+| Password SSH | (lihat catatan WhatsApp) |
+| Folder aplikasi | `/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id` |
+
+**3. Pastikan semua perubahan sudah di-push ke GitHub.**
+Deploy mengambil kode dari GitHub, bukan dari laptop.
+
+---
+
+## LANGKAH 1 — Build di laptop
+
+Aset **wajib dibuild di laptop**, tidak bisa di server (Node di server versi
+18, sedangkan Vite butuh Node 20+).
+
+```bash
+cd C:\Users\MSI\Documents\project\2026\stech
 npm run build
+```
+
+Tunggu sampai muncul `✓ built in ...`.
+
+Lalu push kode:
+
+```bash
 git add -A
-git commit -m "pesan perubahan"
+git commit -m "deskripsi perubahan"
 git push origin main
 ```
 
-### 2. Backup di server (jangan dilewat)
+Kemas asetnya jadi satu file:
 
-Server berisi **data pendaftar sungguhan**. Selalu backup sebelum menyentuh apa pun:
+```bash
+tar -czf build.tgz -C public build
+```
+
+---
+
+## LANGKAH 2 — Kirim aset ke server
+
+```bash
+scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
+```
+
+Masukkan password saat diminta.
+
+> **Kenapa aset dikirim terpisah?** Folder `public/build` sengaja tidak ikut
+> git (ada di `.gitignore`). Kalau langkah ini dilewat, situs akan tampil
+> **polos tanpa CSS sama sekali**. Ini kesalahan paling sering terjadi.
+
+---
+
+## LANGKAH 3 — Masuk ke server & backup
 
 ```bash
 ssh unsoed-stech-ft@stech.ft.unsoed.ac.id
-cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
-BK=~/backups/predeploy-$(date +%Y%m%d-%H%M%S); mkdir -p $BK
-cp .env $BK/.env.backup
-mysqldump -h stech.ft.unsoed.ac.id -u stech -p'PASSWORD_DB' 'stech-db' > $BK/db.sql
-tar czf $BK/storage-app.tgz storage/app
 ```
 
-`storage/app` berisi bukti pembayaran peserta — ikut dibackup.
-
-### 3. Ambil kode baru
+Setelah masuk, backup dulu — **jangan dilewat**, server berisi data pendaftar:
 
 ```bash
 cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
-git checkout -- bootstrap/cache/.gitignore package-lock.json   # buang perubahan sepele
+BK=~/backups/predeploy-$(date +%Y%m%d-%H%M%S); mkdir -p $BK
+cp .env $BK/.env.backup
+mysqldump -h stech.ft.unsoed.ac.id -u stech -p 'stech-db' > $BK/db.sql
+tar czf $BK/storage-app.tgz storage/app
+ls -lh $BK
+```
+
+Perintah `mysqldump` akan meminta password database. Pastikan `db.sql`
+ukurannya tidak 0 byte sebelum lanjut.
+
+---
+
+## LANGKAH 4 — Ambil kode baru
+
+Masih di dalam SSH, di folder aplikasi:
+
+```bash
+git checkout -- bootstrap/cache/.gitignore package-lock.json
 git pull origin main
 composer install --no-dev --optimize-autoloader
 ```
 
-`composer install` otomatis mem-publish asset Filament, jadi tidak perlu
-`php artisan filament:assets` terpisah.
+`composer install` sekaligus menerbitkan aset Filament, jadi tidak perlu
+perintah terpisah.
 
-### 4. Kirim asset frontend (WAJIB — tidak ikut git)
+---
 
-`/public/build` ada di `.gitignore`, jadi **tidak ikut `git pull`**. Kalau
-langkah ini dilewat, situs tampil polos tanpa CSS sama sekali.
+## LANGKAH 5 — Pasang aset frontend
 
 ```bash
-# di laptop
-tar -czf build.tgz -C public build
-scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
-
-# di server
-cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
-rm -rf public/build && tar -xzf ~/tmp/build.tgz -C public
-rm -f public/hot     # kalau file ini ada, situs memaksa ambil asset dari localhost
+rm -rf public/build
+tar -xzf ~/tmp/build.tgz -C public
+rm -f public/hot
+ls public/build/assets | head
 ```
 
-### 5. Migrasi, permission, cache
+`public/hot` harus dihapus — kalau file itu ada, situs memaksa mengambil aset
+dari `localhost` dan halaman jadi rusak.
+
+---
+
+## LANGKAH 6 — Migrasi & cache
 
 ```bash
 php artisan migrate --force
@@ -93,140 +139,164 @@ php artisan route:cache
 php artisan view:cache
 ```
 
-`--force` wajib karena `APP_ENV=production` meminta konfirmasi interaktif.
-**Setiap kali `.env` diubah, `config:cache` harus diulang** — kalau tidak,
-perubahan `.env` tidak terbaca.
+`--force` wajib karena server memakai `APP_ENV=production`.
 
-### 6. Verifikasi
-
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" https://stech.ft.unsoed.ac.id
-curl -s -o /dev/null -w "%{http_code}\n" https://stech.ft.unsoed.ac.id/admin/login
-```
-
-Keduanya harus `200`. Lalu buka di browser: halaman depan harus tampil lengkap
-dengan CSS, dan `/admin/login` menampilkan form login Filament.
+> **Penting:** setiap kali `.env` diubah, `php artisan config:cache` **harus**
+> dijalankan ulang. Kalau tidak, perubahan `.env` tidak akan terbaca.
 
 ---
 
-## ⚠️ MASALAH AKTIF: antivirus server menghapus asset Filament
+## LANGKAH 7 — Verifikasi
 
-**Status: panel admin `/admin` belum bisa dipakai di server.** Halaman depan
-(publik) berjalan normal — masalah ini hanya menimpa panel admin.
+Masih di server:
 
-### Gejala
-
-Login admin berhasil, tapi yang tampil hanya bar atas ("S-Tech Admin" + kotak
-pencarian). Sidebar dan isi dashboard kosong hitam.
-
-### Penyebab
-
-Server menjalankan antivirus real-time **Linux Malware Detect (maldet) +
-ClamAV** yang memantau folder web dan menghapus otomatis beberapa file
-JavaScript milik Filament & Livewire. File-file berikut hilang sendiri
-~2 menit setelah dibuat:
-
-```
-public/js/filament/filament/app.js          <- wajib, ini yang merender sidebar
-public/js/filament/filament/echo.js
-public/js/filament/forms/components/code-editor.js
-public/js/filament/forms/components/file-upload.js
-public/js/filament/forms/components/markdown-editor.js
-public/js/filament/forms/components/rich-editor.js
-public/vendor/livewire/livewire.min.js      <- wajib, tanpa ini Filament mati
+```bash
+curl -s -o /dev/null -w "beranda: %{http_code}\n" https://stech.ft.unsoed.ac.id
+curl -s -o /dev/null -w "admin  : %{http_code}\n" https://stech.ft.unsoed.ac.id/admin/login
 ```
 
-### Bukti (uji terkontrol 7 Sep 2026)
+Keduanya harus `200`.
 
-| Uji | Hasil |
-|---|---|
-| File di-restore, diakses langsung | HTTP 200 (normal) |
-| File yang sama, 2 menit kemudian | HTTP 404 (sudah terhapus) |
-| Salinan dengan **nama berbeda** (`uji-nama-beda.js`) | dihapus |
-| Salinan dengan **ekstensi .txt** | dihapus |
-| Salinan identik di **luar folder web** (`~/tmp/`) | **bertahan** |
-| `clamdscan` manual pada file sumber | **bersih / 0 infected** |
+Lalu buka di browser dan pastikan:
 
-Kesimpulan: pemicunya **isi file**, bukan nama atau ekstensi, dan hanya
-berlaku di dalam folder web. Karena scan manual menyatakan bersih, ini
-**false positive** pada file library open-source resmi.
+- [ ] Halaman depan tampil **lengkap dengan warna/gambar** (bukan teks polos)
+- [ ] Timeline menampilkan 6 tahap (11 Sep – 31 Okt)
+- [ ] Biaya tertulis **Rp 100.000** (bukan 75.000)
+- [ ] Format tim **2–3 orang**
+- [ ] Footer ada **Narahubung: Aldi**
+- [ ] Coba daftar 1 tim uji, lalu hapus lagi lewat panel admin
 
-Log yang relevan (`/usr/local/maldetect/logs/event_log`) menunjukkan monitor
-memindai tiap ~30 detik.
+Kalau halaman tampil polos tanpa CSS → Langkah 5 terlewat.
 
-### Solusi
+---
 
-Ini **tidak bisa diperbaiki dari sisi aplikasi** — butuh akses root. Yang perlu
-diminta ke admin server FT Unsoed:
+## ⚠️ CATATAN PENTING SEBELUM PENDAFTARAN DIBUKA
 
-> Mohon tambahkan pengecualian (whitelist) pada maldet/ClamAV untuk folder
-> `/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id/public/js/` dan
-> `/public/vendor/`. File JavaScript milik framework Filament & Livewire
-> terdeteksi keliru sebagai malware lalu dihapus otomatis, sehingga panel
-> admin tidak bisa berjalan. Pemindaian manual dengan `clamdscan` menyatakan
-> file-file tersebut bersih.
+### 1. Panel admin masih bermasalah (belum selesai)
 
-Pada maldet, pengecualian diletakkan di `/usr/local/maldetect/ignore_paths`,
-lalu `maldet --monitor users` di-restart.
+Antivirus server (maldet/ClamAV) menghapus otomatis file JavaScript Filament &
+Livewire, sehingga panel admin hanya menampilkan bar atas tanpa isi.
 
-Setelah di-whitelist, jalankan ulang di server:
+**Perlu tindakan:** kirim permintaan whitelist ke admin server FT. Draft surat
+sudah disiapkan di [PERMINTAAN-WHITELIST.md](PERMINTAAN-WHITELIST.md).
+
+Setelah admin menyetujui, jalankan di server:
 
 ```bash
 cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
 git checkout -- public/js/
 php artisan livewire:publish --assets
 php artisan filament:assets
+php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
+
+Sisi peserta (pendaftaran, unggah bukti, submit karya) **tidak terpengaruh** —
+semuanya tetap berjalan normal.
+
+### 2. Ganti password admin
+
+Password masih `admin123` dan tertulis di repo GitHub yang bersifat publik.
+Ganti sebelum pendaftaran dibuka:
+
+```bash
+php artisan tinker
+```
+
+Lalu ketik (ganti dengan password pilihanmu):
+
+```php
+$u = App\Models\User::where('email','admin@stech.id')->first();
+$u->password = Hash::make('PASSWORD_BARU_YANG_KUAT');
+$u->save();
+exit
+```
+
+### 3. Nomor rekening masih "Menyusul"
+
+Saat ini dashboard peserta menampilkan "Menyusul" dan meminta peserta menunggu
+pengumuman. Begitu rekening sudah ada, ubah di
+[`resources/js/Pages/Dashboard.vue`](resources/js/Pages/Dashboard.vue) — cari
+kata `Menyusul` — lalu `npm run build` dan ulangi Langkah 1–6.
+
+### 4. Pendaftaran tidak menutup otomatis
+
+Belum ada pembatasan tanggal. Setelah 11 Oktober, pendaftaran dan submit karya
+**masih bisa masuk**. Perlu ditutup manual, atau minta ditambahkan pembatasan
+tanggal.
+
+### 5. Jangan jalankan seeder demo di server
+
+```
+JANGAN:  php artisan db:seed --class=DemoParticipantsSeeder
+```
+
+Perintah itu **menghapus seluruh akun peserta** lalu menggantinya dengan data
+dummy. Hanya untuk komputer lokal.
 
 ---
 
-## Troubleshooting
+## Kalau terjadi masalah
 
 | Gejala | Penyebab & solusi |
 |---|---|
-| `Class "Filament\..." not found` | `composer install` belum dijalankan (langkah 3) |
-| Halaman polos tanpa CSS/JS | `public/build` belum diupload (langkah 4), atau file `public/hot` tertinggal → hapus |
+| Halaman polos tanpa CSS | Langkah 5 terlewat, atau `public/hot` masih ada |
+| `Class "Filament\..." not found` | `composer install` belum dijalankan (Langkah 4) |
 | Perubahan `.env` tidak berpengaruh | `php artisan config:cache` belum diulang |
-| Error 500 tanpa keterangan | Normal — `APP_DEBUG=false`. Lihat detail di `storage/logs/laravel.log` |
-| `Permission denied` saat upload bukti | `chmod -R 775 storage bootstrap/cache` |
-| Panel admin 404 | `php artisan route:cache` perlu diulang |
-| SSH `Connection refused` | Kamu tidak sedang di jaringan kampus |
-| Login admin gagal padahal password benar | Situs diakses lewat `http://`, bukan `https://` (`SESSION_SECURE_COOKIE=true`) |
+| Error 500 tanpa keterangan | Normal (debug dimatikan). Lihat `storage/logs/laravel.log` |
+| `Permission denied` saat unggah bukti | Ulangi `chmod -R 775 storage bootstrap/cache` |
+| Panel admin 404 | Ulangi `php artisan route:cache` |
+| SSH `Connection refused` | Belum terhubung wifi kampus |
+| Login admin gagal padahal benar | Situs dibuka lewat `http://`, harus `https://` |
 
----
+### Cara mengembalikan (rollback)
 
-## Deploy berikutnya (ringkas)
+Kalau deploy bermasalah berat, kembalikan dari backup Langkah 3:
 
 ```bash
-# laptop
-npm run build && git add -A && git commit -m "update" && git push origin main
-tar -czf build.tgz -C public build
-scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
-
-# server
-cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id && \
-git pull origin main && \
-composer install --no-dev --optimize-autoloader && \
-rm -rf public/build && tar -xzf ~/tmp/build.tgz -C public && \
-php artisan migrate --force && \
+cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
+git log --oneline -5                      # cari commit sebelumnya
+git reset --hard <commit-sebelumnya>
+composer install --no-dev --optimize-autoloader
+mysql -h stech.ft.unsoed.ac.id -u stech -p 'stech-db' < ~/backups/predeploy-XXX/db.sql
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 
 ---
 
-## Keamanan — WAJIB dibaca
-
-**Password admin masih `admin123`** (default dari `AdminSeeder`), sedangkan
-panel admin kini aktif di `/admin/login` dan repo GitHub bersifat publik.
-Artinya siapa pun yang membaca `database/seeders/AdminSeeder.php` bisa masuk
-sebagai admin dan melihat data pendaftar beserta bukti pembayaran mereka.
-
-Ganti segera:
+## Ringkasan perintah (untuk deploy berikutnya)
 
 ```bash
+# --- di laptop ---
+npm run build
+git add -A && git commit -m "update" && git push origin main
+tar -czf build.tgz -C public build
+scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
+
+# --- di server (setelah ssh) ---
 cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
-php artisan tinker --execute="\$u=App\Models\User::where('email','admin@stech.id')->first(); \$u->password=Illuminate\Support\Facades\Hash::make('PASSWORD_BARU_YANG_KUAT'); \$u->save(); echo 'diganti';"
+BK=~/backups/predeploy-$(date +%Y%m%d-%H%M%S); mkdir -p $BK && cp .env $BK/
+mysqldump -h stech.ft.unsoed.ac.id -u stech -p 'stech-db' > $BK/db.sql
+git pull origin main
+composer install --no-dev --optimize-autoloader
+rm -rf public/build && tar -xzf ~/tmp/build.tgz -C public && rm -f public/hot
+php artisan migrate --force
+chmod -R 775 storage bootstrap/cache
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+curl -s -o /dev/null -w "%{http_code}\n" https://stech.ft.unsoed.ac.id
 ```
 
-**Jangan jalankan `DemoParticipantsSeeder` di server** — seeder itu menghapus
-seluruh akun peserta lalu menggantinya dengan data dummy. Itu hanya untuk lokal.
+---
+
+## Info server (referensi)
+
+| | |
+|---|---|
+| Web server | nginx (native, **bukan Docker**) |
+| PHP | 8.4.22 |
+| Composer | 2.9.3 |
+| Node di server | 18.19.1 (terlalu tua untuk build) |
+| Database | `stech-db`, user `stech`, host `stech.ft.unsoed.ac.id:3306` |
+| `.env` server | sudah benar, **jangan ditimpa** |
+
+> `docker-compose.yml` dan `Dockerfile` di repo **tidak dipakai** di server ini.
+> Keduanya sisa percobaan deploy lama di VPS. Abaikan saja.
