@@ -3,8 +3,13 @@ import { ref, onMounted } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import {
   X, GraduationCap, BookOpen, Globe, Target, Handshake, Lightbulb,
-  TrendingUp, Briefcase, Network, CreditCard, Check,
+  TrendingUp, Briefcase, Network, CreditCard, Check, MessageCircle,
 } from '@lucide/vue'
+
+// ── Narahubung ────────────────────────────────────────────────────────────────
+// Ditampilkan di footer. Ganti di sini kalau penanggung jawab berubah.
+const contact = { name: 'Aldi', phone: '081225505309' }
+const waLink = `https://wa.me/62${contact.phone.replace(/^0/, '')}`
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface LoginForm {
@@ -770,7 +775,14 @@ onMounted(() => {
         <div class="flex items-center gap-2.5">
           <span class="font-semibold text-white">Soedirman Technophoria 2026</span>
         </div>
-        <p>Program Kerja · Informatika · Universitas Jenderal Soedirman</p>
+        <p class="order-last sm:order-none text-center">Program Kerja · Informatika · Universitas Jenderal Soedirman</p>
+        <a :href="waLink" target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg
+                  border border-blue-700/60 text-blue-100 hover:text-white
+                  hover:border-blue-400 hover:bg-blue-800/60 transition-all duration-200">
+          <MessageCircle :size="13" />
+          Narahubung: {{ contact.name }} · {{ contact.phone }}
+        </a>
       </div>
     </footer>
 

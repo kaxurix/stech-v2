@@ -612,7 +612,10 @@ onMounted(() => {
             </div>
             <p class="text-xs text-gray-500 mt-3 pt-3 border-t border-amber-200/60 flex items-start gap-1.5">
               <AlertTriangle :size="14" class="flex-shrink-0 mt-0.5 text-amber-500" />
-              <span><strong class="text-gray-700">Nomor rekening masih menyusul</strong> — mohon tunggu pengumuman dari panitia sebelum melakukan transfer. Nominalnya <strong class="text-gray-700">Rp 100.000</strong>, nanti ditransfer tepat sejumlah itu (tidak kurang/lebih) agar verifikasi lebih mudah.</span>
+              <span><strong class="text-gray-700">Nomor rekening masih menyusul</strong> — mohon tunggu pengumuman dari panitia sebelum melakukan transfer. Nominalnya <strong class="text-gray-700">Rp 100.000</strong>, nanti ditransfer tepat sejumlah itu (tidak kurang/lebih) agar verifikasi lebih mudah.
+                Ada pertanyaan? Hubungi
+                <a href="https://wa.me/6281225505309" target="_blank" rel="noopener noreferrer"
+                   class="font-semibold text-amber-700 underline hover:text-amber-800">Aldi (081225505309)</a>.</span>
             </p>
           </div>
 

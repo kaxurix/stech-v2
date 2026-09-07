@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
         $middleware->append(\App\Http\Middleware\NgrokWarningMiddleware::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
         
         // Inertia share middleware
         $middleware->web(append: [
