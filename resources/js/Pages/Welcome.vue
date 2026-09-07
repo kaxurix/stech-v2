@@ -520,7 +520,7 @@ onMounted(() => {
               </div>
               <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
                 <p class="text-[9px] text-blue-600 font-semibold">Format Tim</p>
-                <p class="text-xs font-semibold text-blue-900">1–4 Orang</p>
+                <p class="text-xs font-semibold text-blue-900">2–3 Orang</p>
               </div>
               <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
                 <p class="text-[9px] text-blue-600 font-semibold">Biaya</p>
@@ -533,7 +533,7 @@ onMounted(() => {
                         border-2 border-amber-200 shadow-lg shadow-amber-500/10 mb-4">
               <div class="absolute left-0 top-5 bottom-5 w-1 rounded-full bg-amber-400"></div>
               <p class="text-xs text-amber-700 mb-1 uppercase tracking-wider font-bold pl-3">Total Hadiah</p>
-              <p class="text-4xl font-extrabold text-amber-700 mb-0.5 pl-3">Rp 5 Jt+</p>
+              <p class="text-4xl font-extrabold text-amber-700 mb-0.5 pl-3">Rp 4 Jt+</p>
               <p class="text-sm text-gray-500 pl-3">Juara 1 · Juara 2 · Juara 3</p>
             </div>
 
@@ -960,10 +960,8 @@ onMounted(() => {
                     <select v-model="registerForm.member_count"
                             class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800
                                    focus:outline-none focus:border-blue-500 transition-all duration-200">
-                      <option :value="1">1 Orang</option>
                       <option :value="2">2 Orang</option>
                       <option :value="3">3 Orang</option>
-                      <option :value="4">4 Orang</option>
                     </select>
                   </div>
                 </div>
@@ -991,7 +989,7 @@ onMounted(() => {
                 <!-- Biaya info -->
                 <div class="flex items-start gap-2 px-4 py-3 rounded-xl border-2 border-amber-200 bg-amber-50 text-xs text-amber-700">
                   <CreditCard :size="14" class="flex-shrink-0 mt-0.5" />
-                  <span>Biaya pendaftaran: <strong>Rp 75.000 / tim</strong>. Bukti transfer diunggah setelah daftar.</span>
+                  <span>Biaya pendaftaran: <strong>Rp 100.000 / tim</strong>. Bukti transfer diunggah setelah daftar.</span>
                 </div>
 
                 <!-- Submit -->

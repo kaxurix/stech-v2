@@ -68,6 +68,37 @@ class ParticipantFlowTest extends TestCase
         $this->assertSame('Tim Garuda', $user->registration->team_name);
     }
 
+    /**
+     * Lomba hanya menerima tim 2-3 orang. Aturan ini juga tampil di halaman
+     * depan, jadi validasinya dikunci di sini supaya frontend dan backend
+     * tidak berbeda kalau salah satunya diubah.
+     */
+    public function test_team_size_outside_two_to_three_is_rejected(): void
+    {
+        foreach ([1, 4] as $invalid) {
+            $this->post('/register', $this->registerPayload([
+                'email' => "tim{$invalid}@example.com",
+                'member_count' => $invalid,
+            ]))->assertSessionHasErrors('member_count');
+        }
+
+        $this->assertSame(0, User::where('role', 'peserta')->count());
+    }
+
+    public function test_team_size_two_and_three_are_accepted(): void
+    {
+        foreach ([2, 3] as $valid) {
+            $this->post('/register', $this->registerPayload([
+                'email' => "oke{$valid}@example.com",
+                'member_count' => $valid,
+            ]))->assertSessionHasNoErrors();
+
+            $this->post('/logout');
+        }
+
+        $this->assertSame(2, User::where('role', 'peserta')->count());
+    }
+
     public function test_duplicate_email_is_rejected(): void
     {
         $this->post('/register', $this->registerPayload());

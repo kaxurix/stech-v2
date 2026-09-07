@@ -33,7 +33,7 @@ class AuthController extends Controller
             'password'     => ['required', 'confirmed', Password::min(6)],
             'team_name'    => ['required', 'string', 'max:100'],
             'competition'  => ['required', 'in:web-development'],
-            'member_count' => ['required', 'integer', 'min:1', 'max:4'],
+            'member_count' => ['required', 'integer', 'min:2', 'max:3'],
             'institution'  => ['required', 'string', 'max:150'],
             'phone'        => ['required', 'string', 'max:20'],
             'category'     => ['required', 'in:sma,mahasiswa,umum'],

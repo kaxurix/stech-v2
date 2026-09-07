@@ -599,7 +599,7 @@ onMounted(() => {
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">No. Rekening</p>
-                <p class="text-sm font-bold text-blue-900">1234 5678 90</p>
+                <p class="text-sm font-bold text-amber-700">Menyusul</p>
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">Atas Nama</p>
@@ -607,12 +607,12 @@ onMounted(() => {
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">Nominal</p>
-                <p class="text-lg font-extrabold text-amber-700">Rp 75.000</p>
+                <p class="text-lg font-extrabold text-amber-700">Rp 100.000</p>
               </div>
             </div>
             <p class="text-xs text-gray-500 mt-3 pt-3 border-t border-amber-200/60 flex items-start gap-1.5">
               <AlertTriangle :size="14" class="flex-shrink-0 mt-0.5 text-amber-500" />
-              <span>Transfer tepat <strong class="text-gray-700">Rp 75.000</strong> (tidak kurang/lebih) agar verifikasi lebih mudah.</span>
+              <span><strong class="text-gray-700">Nomor rekening masih menyusul</strong> — mohon tunggu pengumuman dari panitia sebelum melakukan transfer. Nominalnya <strong class="text-gray-700">Rp 100.000</strong>, nanti ditransfer tepat sejumlah itu (tidak kurang/lebih) agar verifikasi lebih mudah.</span>
             </p>
           </div>
 
