@@ -37,12 +37,15 @@ const registerForm = ref<RegisterForm>({
 })
 
 // ── Timeline ─────────────────────────────────────────────────────────────────
+// `current` menandai tahap yang sedang berjalan (dot biru). Geser flag ini
+// saat tahap berganti; `done: true` untuk tahap yang sudah lewat (dot hijau).
 const timeline = [
-  { date: '1 Jun 2026',  label: 'Pendaftaran Dibuka',  done: true  },
-  { date: '30 Jun 2026', label: 'Batas Pendaftaran',   done: false },
-  { date: '5 Jul 2026',  label: 'Technical Meeting',   done: false },
-  { date: '15 Jul 2026', label: 'Penyisihan Online',   done: false },
-  { date: '22 Jul 2026', label: 'Grand Final & Seminar Nasional', done: false },
+  { date: '11 Sep – 11 Okt 2026', label: 'Pendaftaran & Pengumpulan', done: false, current: true },
+  { date: '12 – 16 Okt 2026',     label: 'Penjurian',                 done: false },
+  { date: '17 Okt 2026',          label: 'Pengumuman',                done: false },
+  { date: '18 Okt 2026',          label: 'Technical Meeting',         done: false },
+  { date: '19 – 30 Okt 2026',     label: 'Penyelesaian',              done: false },
+  { date: '31 Okt 2026',          label: 'Seminar & Grand Final',     done: false },
 ]
 
 // ── Bintang dekoratif ──────────────────────────────────────────────────────────
@@ -91,8 +94,8 @@ const aboutHighlights = [
 ]
 
 const audienceBadges = [
-  { icon: GraduationCap, label: 'Mahasiswa' },
   { icon: BookOpen,      label: 'Pelajar SMA / SMK' },
+  { icon: GraduationCap, label: 'Mahasiswa' },
   { icon: Globe,         label: 'Masyarakat Umum' },
 ]
 
@@ -218,7 +221,7 @@ onMounted(() => {
           </button>
           <button @click="openModal('register')" id="nav-register-btn"
                   class="px-4 py-2 text-sm font-semibold rounded-lg
-                         bg-amber-500 hover:bg-amber-400 text-blue-950
+                         bg-amber-500 hover:bg-amber-600 text-white
                          shadow-md shadow-amber-500/30 transition-all duration-200 active:scale-95">
             Daftar
           </button>
@@ -258,7 +261,7 @@ onMounted(() => {
           <div class="pt-3 flex flex-col gap-2">
             <button @click="openModal('register')"
                     class="w-full py-3 text-sm font-semibold rounded-xl
-                           bg-amber-500 hover:bg-amber-400 text-blue-950 transition-all duration-200">
+                           bg-amber-500 hover:bg-amber-600 text-white transition-all duration-200">
               Daftar Sekarang
             </button>
           </div>
@@ -340,14 +343,14 @@ onMounted(() => {
           </p>
           <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 sm:mt-10 animate-fade-in-up [animation-delay:240ms]">
             <button @click="openModal('register')" id="hero-register-btn"
-                    class="w-full sm:w-auto px-7 py-3.5 text-sm font-bold rounded-xl
-                           bg-amber-500 hover:bg-amber-400 text-blue-950
-                           shadow-lg shadow-amber-500/40 hover:shadow-amber-400/50
+                    class="w-full sm:w-56 px-7 py-3.5 text-sm font-bold rounded-xl
+                           bg-amber-500 hover:bg-amber-600 text-white
+                           shadow-lg shadow-amber-500/40 hover:shadow-amber-600/50
                            transition-all duration-200 active:scale-[0.98]">
               Daftar Sekarang →
             </button>
-            <a href="https://drive.google.com/your-guidebook-link" target="_blank" rel="noopener noreferrer"
-               class="w-full sm:w-auto px-7 py-3.5 text-sm font-medium text-center rounded-xl
+            <a href="https://drive.google.com/drive/folders/1XKAmL9m-LU5B7DW3ibcGnJVsYtiOiTXN?usp=sharing" target="_blank" rel="noopener noreferrer"
+               class="w-full sm:w-56 px-7 py-3.5 text-sm font-medium text-center rounded-xl
                       border-2 border-white/50 text-white hover:bg-white/20
                       hover:border-white transition-all duration-200
                       flex items-center justify-center gap-2 backdrop-blur-sm">
@@ -536,7 +539,7 @@ onMounted(() => {
 
             <button @click="openModal('register')"
                     class="mt-auto w-full py-3.5 text-sm font-bold rounded-xl
-                           bg-amber-500 hover:bg-amber-400 text-blue-950
+                           bg-amber-500 hover:bg-amber-600 text-white
                            shadow-lg shadow-amber-500/40 transition-all duration-200 active:scale-[0.98]">
               Daftar Lomba Sekarang →
             </button>
@@ -553,7 +556,7 @@ onMounted(() => {
             <div class="flex flex-wrap gap-2 mb-5">
               <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
                 <p class="text-[9px] text-blue-600 font-semibold">Tanggal</p>
-                <p class="text-xs font-semibold text-blue-900">22 Oktober 2045</p>
+                <p class="text-xs font-semibold text-blue-900">31 Oktober 2026</p>
               </div>
               <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
                 <p class="text-[9px] text-blue-600 font-semibold">Format</p>
@@ -570,13 +573,20 @@ onMounted(() => {
             </div>
 
             <p class="text-[11px] font-bold text-blue-500 uppercase tracking-wider mb-2">Topik Bahasan</p>
-            <div class="space-y-1 mt-auto">
+            <div class="space-y-1 mb-5">
               <div v-for="topic in seminarTopics" :key="topic.label"
                    class="flex items-center gap-3 p-2.5 rounded-xl hover:bg-blue-50 transition-all duration-200">
                 <component :is="topic.icon" :size="16" class="text-blue-500 flex-shrink-0" />
                 <p class="text-sm text-gray-700 font-medium">{{ topic.label }}</p>
               </div>
             </div>
+
+            <a href="#" target="_blank" rel="noopener noreferrer"
+               class="mt-auto w-full py-3.5 text-sm font-bold rounded-xl text-center
+                      bg-amber-500 hover:bg-amber-600 text-white
+                      shadow-lg shadow-amber-500/40 transition-all duration-200 active:scale-[0.98]">
+              Daftar Seminar Sekarang →
+            </a>
           </div>
         </div>
         </div>
@@ -622,18 +632,18 @@ onMounted(() => {
                 <div :class="['relative z-10 flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center',
                               item.done ? 'border-green-500 bg-green-500 shadow-lg shadow-green-500/30'
                               : i === timeline.length - 1 ? 'border-amber-400 bg-amber-50 shadow-lg shadow-amber-400/30'
-                              : i === 1 ? 'border-blue-500 bg-blue-500 ring-4 ring-blue-100'
+                              : item.current ? 'border-blue-500 bg-blue-500 ring-4 ring-blue-100'
                               : 'border-blue-200 bg-white']">
                   <svg v-if="item.done" class="w-4 h-4 text-white"
                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
                   <span v-else class="text-xs font-bold"
-                        :class="i === 1 ? 'text-white' : i === timeline.length - 1 ? 'text-amber-500' : 'text-blue-300'">{{ i + 1 }}</span>
+                        :class="item.current ? 'text-white' : i === timeline.length - 1 ? 'text-amber-500' : 'text-blue-300'">{{ i + 1 }}</span>
                 </div>
                 <div class="pt-2">
                   <p class="text-sm font-semibold leading-snug"
-                     :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-600 font-bold' : i === 1 ? 'text-blue-700 font-bold' : 'text-gray-500'">
+                     :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-600 font-bold' : item.current ? 'text-blue-700 font-bold' : 'text-gray-500'">
                     {{ item.label }}
                   </p>
                   <p class="text-xs mt-1"
@@ -652,17 +662,17 @@ onMounted(() => {
                 <div :class="['w-10 h-10 rounded-full border-2 flex items-center justify-center z-10 mb-4',
                               item.done ? 'border-green-500 bg-green-500 shadow-lg shadow-green-500/30'
                               : i === timeline.length - 1 ? 'border-amber-400 bg-amber-50 shadow-lg shadow-amber-400/40'
-                              : i === 1 ? 'border-blue-500 bg-blue-500 ring-4 ring-blue-100'
+                              : item.current ? 'border-blue-500 bg-blue-500 ring-4 ring-blue-100'
                               : 'border-blue-200 bg-white']">
                   <svg v-if="item.done" class="w-4 h-4 text-white"
                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
                   <span v-else class="text-xs font-bold"
-                        :class="i === 1 ? 'text-white' : i === timeline.length - 1 ? 'text-amber-500' : 'text-blue-300'">{{ i + 1 }}</span>
+                        :class="item.current ? 'text-white' : i === timeline.length - 1 ? 'text-amber-500' : 'text-blue-300'">{{ i + 1 }}</span>
                 </div>
                 <p class="text-xs font-semibold leading-snug"
-                   :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-600 font-bold' : i === 1 ? 'text-blue-700 font-bold' : 'text-gray-500'">
+                   :class="item.done ? 'text-green-700' : i === timeline.length - 1 ? 'text-amber-600 font-bold' : item.current ? 'text-blue-700 font-bold' : 'text-gray-500'">
                   {{ item.label }}
                 </p>
                 <p class="text-[10px] mt-1.5"
@@ -740,8 +750,8 @@ onMounted(() => {
               </p>
               <button @click="openModal('register')" id="cta-register-btn"
                       class="px-8 sm:px-10 py-3.5 text-sm font-bold rounded-xl
-                             bg-amber-500 hover:bg-amber-400 text-blue-950
-                             shadow-xl shadow-amber-500/40 hover:shadow-amber-400/50
+                             bg-amber-500 hover:bg-amber-600 text-white
+                             shadow-xl shadow-amber-500/40 hover:shadow-amber-600/50
                              transition-all duration-200 active:scale-[0.98]">
                 Daftar Sekarang →
               </button>
@@ -848,7 +858,7 @@ onMounted(() => {
                 </div>
                 <button type="submit" id="login-submit-btn" :disabled="loginForm.loading"
                         class="w-full py-3 rounded-xl text-sm font-bold
-                               bg-amber-500 hover:bg-amber-400 text-blue-950
+                               bg-amber-500 hover:bg-amber-600 text-white
                                shadow-lg shadow-amber-500/30 transition-all duration-200
                                active:scale-[0.98] disabled:opacity-60
                                flex items-center justify-center gap-2 mt-2">
@@ -987,7 +997,7 @@ onMounted(() => {
                 <!-- Submit -->
                 <button type="submit" id="register-submit-btn" :disabled="registerForm.loading"
                         class="w-full py-3 rounded-xl text-sm font-bold
-                               bg-amber-500 hover:bg-amber-400 text-blue-950
+                               bg-amber-500 hover:bg-amber-600 text-white
                                shadow-lg shadow-amber-500/30 transition-all duration-200
                                active:scale-[0.98] disabled:opacity-60
                                flex items-center justify-center gap-2">

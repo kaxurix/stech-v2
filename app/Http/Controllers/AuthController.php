@@ -74,7 +74,7 @@ class AuthController extends Controller
 
     // ── Login ─────────────────────────────────────────────────────────────────
 
-    public function login(Request $request): RedirectResponse
+    public function login(Request $request): RedirectResponse|\Symfony\Component\HttpFoundation\Response
     {
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
@@ -86,9 +86,11 @@ class AuthController extends Controller
 
             $user = Auth::user();
 
-            // Route admin to admin panel
+            // Route admin to admin panel. This is a plain (non-Inertia) page, so the
+            // login form's Inertia request needs a hard browser redirect rather than
+            // an XHR-based Inertia visit, or the panel renders broken inside the SPA shell.
             if ($user->isAdmin()) {
-                return redirect('/admin');
+                return Inertia::location('/admin');
             }
 
             return redirect()->route('dashboard');
