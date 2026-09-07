@@ -1,227 +1,111 @@
 # Alur Deploy ke stech.ft.unsoed.ac.id
 
-Panduan upload aplikasi dari laptop lokal ke server kampus.
-
-- **Server**: `stech.ft.unsoed.ac.id` (nginx)
-- **SSH**: `unsoed-stech-ft@stech.ft.unsoed.ac.id`
-- **Database**: `stech-db` / user `stech` (MySQL di server)
-
-> **Catatan jaringan**: SSH hanya bisa diakses dari **jaringan kampus Unsoed**.
-> Dari luar (mis. wifi rumah), domain resolve ke IP publik `103.9.22.82` yang
-> port SSH-nya tertutup. Di dalam kampus, resolve ke IP internal `172.25.0.65`
-> dan port 22 terbuka. Jadi deploy hanya bisa dilakukan saat terhubung wifi Unsoed.
+Panduan upload aplikasi dari laptop ke server kampus.
+Alur di bawah **sudah diuji dan berhasil** pada 7 September 2026.
 
 ---
 
-## Kondisi saat ini (per 7 Sep 2026)
+## Kondisi server (terverifikasi)
 
-Versi yang jalan di server **tertinggal jauh** dari lokal:
+| | |
+|---|---|
+| Path aplikasi | `/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id` |
+| SSH | `unsoed-stech-ft@stech.ft.unsoed.ac.id` (port 22) |
+| Web server | nginx (native) |
+| **Docker** | **TIDAK dipakai.** `docker-compose.yml` & `Dockerfile` di repo hanya sisa percobaan lama — abaikan saja |
+| PHP | 8.4.22 |
+| Composer | 2.9.3 |
+| Node | 18.19.1 — **terlalu tua untuk Vite 8**, jadi build wajib dari laptop |
+| Git | repo aktif, remote `github.com/kaxurix/stech-v2`, branch `main` |
+| Database | `stech-db`, user `stech`, host `stech.ft.unsoed.ac.id:3306` |
+| `.env` server | sudah benar — **jangan ditimpa** |
 
-| | Server (live) | Lokal (siap deploy) |
-|---|---|---|
-| Panel admin | Inertia/Vue lama | **Filament** (`/admin/login` di server masih 404) |
-| Asset | `app-Dtq65eGY.js` | `app-Cv6xXiK4.js` |
-| Timeline | Jun–Jul 2026 | 11 Sep – 31 Okt 2026 |
-| Guidebook | placeholder | link Google Docs asli |
+> **Hanya bisa dari jaringan kampus.** Di dalam kampus, domain resolve ke IP
+> internal `172.25.0.65` dan port 22 terbuka. Dari luar (wifi rumah), resolve ke
+> IP publik `103.9.22.82` yang port SSH-nya ditutup — SSH akan gagal.
 
-Konsekuensinya: deploy ini **wajib menjalankan `composer install`** di server,
-karena Filament dan Livewire adalah dependency baru yang belum ada di sana.
-Kalau hanya upload file tanpa `composer install`, aplikasi akan error total
-(class not found).
-
----
-
-## Langkah 0 — Cek kondisi server (WAJIB, sekali saja)
-
-Metode deploy berbeda tergantung server pakai Docker atau native. Jalankan ini
-dulu dan catat hasilnya:
-
-```bash
-ssh unsoed-stech-ft@stech.ft.unsoed.ac.id "pwd; ls -la ~; for c in php composer node npm git docker; do printf '%s: ' \$c; command -v \$c || echo NO; done; php -v | head -1; docker ps 2>/dev/null || echo 'no docker'"
-```
-
-Yang perlu dipastikan:
-
-1. **Di mana folder aplikasinya?** (cari folder yang berisi `artisan`)
-2. **Ada `composer`?** Kalau tidak ada, lihat bagian Troubleshooting.
-3. **Ada `docker`?** Kalau ada dan `docker ps` menampilkan container `stech-*`,
-   pakai **Jalur B**. Kalau tidak, pakai **Jalur A**.
-4. **Versi PHP** minimal 8.3 (composer.json mensyaratkan `^8.3`).
+> `.env` di server sudah dikonfigurasi benar, jadi [`.env.production`](.env.production)
+> di repo hanya acuan/cadangan. Tidak perlu diupload.
 
 ---
 
-## Jalur A — Deploy native (nginx + PHP-FPM)
+## Alur deploy
 
-Ini jalur yang paling mungkin untuk hosting kampus.
-
-### A1. Build asset di lokal
-
-Asset **di-build di laptop**, bukan di server — server kampus biasanya tidak
-punya Node.js, dan build butuh RAM besar.
+### 1. Di laptop — build & push
 
 ```bash
 npm run build
-```
-
-Hasilnya masuk ke `public/build/`. (Sudah saya jalankan, hasilnya terbaru.)
-
-### A2. Upload file ke server
-
-Ganti `<PATH_APP>` dengan folder aplikasi hasil Langkah 0.
-
-**Opsi 1 — `git pull` di server (paling rapi, kalau server sudah clone repo):**
-
-```bash
-# di laptop: commit & push dulu
 git add -A
-git commit -m "feat: panel admin Filament, timeline baru, guidebook"
+git commit -m "pesan perubahan"
 git push origin main
+```
 
-# lalu di server
+### 2. Backup di server (jangan dilewat)
+
+Server berisi **data pendaftar sungguhan**. Selalu backup sebelum menyentuh apa pun:
+
+```bash
 ssh unsoed-stech-ft@stech.ft.unsoed.ac.id
-cd <PATH_APP>
+cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
+BK=~/backups/predeploy-$(date +%Y%m%d-%H%M%S); mkdir -p $BK
+cp .env $BK/.env.backup
+mysqldump -h stech.ft.unsoed.ac.id -u stech -p'PASSWORD_DB' 'stech-db' > $BK/db.sql
+tar czf $BK/storage-app.tgz storage/app
+```
+
+`storage/app` berisi bukti pembayaran peserta — ikut dibackup.
+
+### 3. Ambil kode baru
+
+```bash
+cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
+git checkout -- bootstrap/cache/.gitignore package-lock.json   # buang perubahan sepele
 git pull origin main
-```
-
-> **JEBAKAN — baca ini.** `/public/build` ada di `.gitignore` (baris 17), jadi
-> asset hasil build **TIDAK ikut** `git push`. Kalau di server hanya `git pull`,
-> halaman akan tampil polos tanpa CSS/JS sama sekali. Asset wajib diupload
-> terpisah:
->
-> ```bash
-> scp -r public/build unsoed-stech-ft@stech.ft.unsoed.ac.id:<PATH_APP>/public/
-> ```
->
-> Alternatifnya, hapus baris `/public/build` dari `.gitignore` supaya asset ikut
-> ter-commit — repo jadi sedikit lebih besar, tapi deploy cukup `git pull` saja
-> dan tidak ada risiko lupa upload asset.
-
-**Opsi 2 — `scp` (upload langsung tanpa git):**
-
-```bash
-# dari folder project di laptop
-scp -r public/build unsoed-stech-ft@stech.ft.unsoed.ac.id:<PATH_APP>/public/
-scp -r app resources routes database config unsoed-stech-ft@stech.ft.unsoed.ac.id:<PATH_APP>/
-scp composer.json composer.lock unsoed-stech-ft@stech.ft.unsoed.ac.id:<PATH_APP>/
-```
-
-> Jangan upload `vendor/` dan `node_modules/` — besar dan lambat. `vendor/`
-> dibuat ulang oleh `composer install` di server (langkah A4).
->
-> Jangan upload `.env` lokal — lihat langkah A3.
-
-### A3. Samakan `.env` di server
-
-Saya sudah siapkan [`.env.production`](.env.production) di lokal sebagai acuan
-(file ini di-gitignore, jadi tidak ikut ter-commit).
-
-**Jangan langsung menimpa `.env` server.** Bandingkan dulu:
-
-```bash
-ssh unsoed-stech-ft@stech.ft.unsoed.ac.id
-cd <PATH_APP>
-cp .env .env.backup-$(date +%F)   # backup dulu
-nano .env
-```
-
-Pastikan nilainya:
-
-```
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://stech.ft.unsoed.ac.id
-DB_DATABASE=stech-db
-DB_USERNAME=stech
-DB_PASSWORD=<password dari panitia>
-SESSION_SECURE_COOKIE=true
-```
-
-> **`APP_KEY` jangan diubah** kalau server sudah punya. Mengganti APP_KEY
-> membuat semua sesi login lama tidak terbaca (semua user ter-logout).
-
-### A4. Install dependency & migrasi
-
-```bash
-cd <PATH_APP>
-
-# Install package PHP versi produksi (tanpa dev tools, lebih cepat & aman)
 composer install --no-dev --optimize-autoloader
-
-# Publish asset Filament (WAJIB — Filament baru pertama kali dipasang di server)
-php artisan filament:assets
-
-# Jalankan migrasi
-php artisan migrate --force
 ```
 
-`--force` diperlukan karena di `APP_ENV=production` Laravel meminta konfirmasi
-interaktif sebelum migrasi.
+`composer install` otomatis mem-publish asset Filament, jadi tidak perlu
+`php artisan filament:assets` terpisah.
 
-### A5. Cache untuk produksi
+### 4. Kirim asset frontend (WAJIB — tidak ikut git)
+
+`/public/build` ada di `.gitignore`, jadi **tidak ikut `git pull`**. Kalau
+langkah ini dilewat, situs tampil polos tanpa CSS sama sekali.
 
 ```bash
+# di laptop
+tar -czf build.tgz -C public build
+scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
+
+# di server
+cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
+rm -rf public/build && tar -xzf ~/tmp/build.tgz -C public
+rm -f public/hot     # kalau file ini ada, situs memaksa ambil asset dari localhost
+```
+
+### 5. Migrasi, permission, cache
+
+```bash
+php artisan migrate --force
+chmod -R 775 storage bootstrap/cache
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
-Ini mempercepat aplikasi drastis. **Ingat**: setiap kali `.env` diubah,
-`config:cache` harus dijalankan ulang, kalau tidak perubahan `.env` tidak terbaca.
+`--force` wajib karena `APP_ENV=production` meminta konfirmasi interaktif.
+**Setiap kali `.env` diubah, `config:cache` harus diulang** — kalau tidak,
+perubahan `.env` tidak terbaca.
 
-### A6. Permission folder
-
-```bash
-chmod -R 775 storage bootstrap/cache
-```
-
-Kalau muncul error "Permission denied" saat upload bukti bayar, jalankan ini lagi.
-
-### A7. Verifikasi
+### 6. Verifikasi
 
 ```bash
-curl -I https://stech.ft.unsoed.ac.id
-curl -I https://stech.ft.unsoed.ac.id/admin/login   # harus 200, bukan 404
+curl -s -o /dev/null -w "%{http_code}\n" https://stech.ft.unsoed.ac.id
+curl -s -o /dev/null -w "%{http_code}\n" https://stech.ft.unsoed.ac.id/admin/login
 ```
 
-Lalu buka di browser:
-
-- Halaman depan → timeline harus menampilkan 6 tahap (11 Sep – 31 Okt)
-- `/admin/login` → halaman login Filament
-- Login admin → dashboard dengan statistik & tabel peserta
-
----
-
-## Jalur B — Deploy Docker
-
-Kalau Langkah 0 menunjukkan Docker aktif dengan container `stech-app` /
-`stech-web` / `stech-db`:
-
-```bash
-ssh unsoed-stech-ft@stech.ft.unsoed.ac.id
-cd <PATH_APP>
-git pull origin main
-docker compose build app
-docker compose up -d
-docker compose exec app php artisan migrate --force
-docker compose exec app php artisan filament:assets
-docker compose exec app php artisan config:cache && \
-docker compose exec app php artisan route:cache && \
-docker compose exec app php artisan view:cache
-```
-
-Catatan khusus Docker di project ini: nginx dan app berbagi `public/build` +
-`vendor` lewat named volume `stech-assets`. Setelah build ulang, volume itu
-perlu di-refresh supaya nginx menyajikan asset baru — kalau halaman tampil
-tanpa CSS setelah deploy, itu penyebabnya:
-
-```bash
-docker compose down
-docker volume rm stech_stech-assets   # nama bisa berbeda, cek: docker volume ls
-docker compose up -d
-```
-
-Kalau pakai Docker, `DB_HOST` di `.env` **bukan** `127.0.0.1` melainkan nama
-service database (`stech-db`).
+Keduanya harus `200`. Lalu buka di browser: halaman depan harus tampil lengkap
+dengan CSS, dan `/admin/login` menampilkan form login Filament.
 
 ---
 
@@ -229,48 +113,49 @@ service database (`stech-db`).
 
 | Gejala | Penyebab & solusi |
 |---|---|
-| `Class "Filament\..." not found` | `composer install` belum dijalankan di server (langkah A4) |
-| Halaman tampil tanpa CSS/JS | `public/build/` belum terupload, atau `public/hot` tertinggal di server → hapus file `public/hot` |
-| Perubahan `.env` tidak berpengaruh | `php artisan config:cache` belum dijalankan ulang |
-| Error 500 tanpa keterangan | `APP_DEBUG=false` (memang disengaja). Lihat detailnya di `storage/logs/laravel.log` |
+| `Class "Filament\..." not found` | `composer install` belum dijalankan (langkah 3) |
+| Halaman polos tanpa CSS/JS | `public/build` belum diupload (langkah 4), atau file `public/hot` tertinggal → hapus |
+| Perubahan `.env` tidak berpengaruh | `php artisan config:cache` belum diulang |
+| Error 500 tanpa keterangan | Normal — `APP_DEBUG=false`. Lihat detail di `storage/logs/laravel.log` |
 | `Permission denied` saat upload bukti | `chmod -R 775 storage bootstrap/cache` |
-| Panel admin 404 | `php artisan route:cache` perlu dijalankan ulang setelah deploy |
-| `composer` tidak ada di server | Pakai composer.phar: `curl -sS https://getcomposer.org/installer \| php` lalu `php composer.phar install --no-dev --optimize-autoloader` |
-| Login admin gagal padahal password benar | `SESSION_SECURE_COOKIE=true` tapi diakses lewat `http://` (bukan https) |
+| Panel admin 404 | `php artisan route:cache` perlu diulang |
+| SSH `Connection refused` | Kamu tidak sedang di jaringan kampus |
+| Login admin gagal padahal password benar | Situs diakses lewat `http://`, bukan `https://` (`SESSION_SECURE_COOKIE=true`) |
 
 ---
 
-## Perintah ringkas (setelah setup pertama beres)
-
-Untuk deploy berikutnya:
+## Deploy berikutnya (ringkas)
 
 ```bash
-# di laptop
-npm run build && git add -A && git commit -m "update" && git push
+# laptop
+npm run build && git add -A && git commit -m "update" && git push origin main
+tar -czf build.tgz -C public build
+scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
 
-# di server
-ssh unsoed-stech-ft@stech.ft.unsoed.ac.id
-cd <PATH_APP> && git pull origin main && \
+# server
+cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id && \
+git pull origin main && \
 composer install --no-dev --optimize-autoloader && \
+rm -rf public/build && tar -xzf ~/tmp/build.tgz -C public && \
 php artisan migrate --force && \
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```
 
 ---
 
-## Akun admin
+## Keamanan — WAJIB dibaca
 
-Setelah deploy, akun admin dibuat dengan:
+**Password admin masih `admin123`** (default dari `AdminSeeder`), sedangkan
+panel admin kini aktif di `/admin/login` dan repo GitHub bersifat publik.
+Artinya siapa pun yang membaca `database/seeders/AdminSeeder.php` bisa masuk
+sebagai admin dan melihat data pendaftar beserta bukti pembayaran mereka.
+
+Ganti segera:
 
 ```bash
-php artisan db:seed --class=AdminSeeder
+cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
+php artisan tinker --execute="\$u=App\Models\User::where('email','admin@stech.id')->first(); \$u->password=Illuminate\Support\Facades\Hash::make('PASSWORD_BARU_YANG_KUAT'); \$u->save(); echo 'diganti';"
 ```
 
-Kredensial default: `admin@stech.id` / `admin123`.
-
-> **Ganti password ini sebelum situs dipakai pendaftaran sungguhan.** Password
-> default sudah tertulis di repositori, jadi siapa pun yang melihat kode bisa
-> masuk sebagai admin.
-
-> **Jangan jalankan `DemoParticipantsSeeder` di server** — seeder itu menghapus
-> seluruh akun peserta lalu mengisi data dummy. Itu hanya untuk lokal.
+**Jangan jalankan `DemoParticipantsSeeder` di server** — seeder itu menghapus
+seluruh akun peserta lalu menggantinya dengan data dummy. Itu hanya untuk lokal.
