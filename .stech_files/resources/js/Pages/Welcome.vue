@@ -82,7 +82,7 @@ const competitions = [
 
 // ── Timeline ──────────────────────────────────────────────────────────────────
 const timeline = [
-  { date: '1 Jun 2026', label: 'Pendaftaran Dibuka' },
+  { date: '11 Sep 2026', label: 'Pendaftaran Dibuka' },
   { date: '30 Jun 2026', label: 'Pendaftaran Ditutup' },
   { date: '5 Jul 2026', label: 'Technical Meeting' },
   { date: '15 Jul 2026', label: 'Babak Penyisihan' },

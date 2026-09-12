@@ -55,11 +55,11 @@ const registerForm = ref<RegisterForm>({
 // `current` menandai tahap yang sedang berjalan (dot biru). Geser flag ini
 // saat tahap berganti; `done: true` untuk tahap yang sudah lewat (dot hijau).
 const timeline = [
-  { date: '11 Sep – 11 Okt 2026', label: 'Pendaftaran & Pengumpulan', done: false, current: true },
-  { date: '12 – 16 Okt 2026',     label: 'Penjurian',                 done: false },
-  { date: '17 Okt 2026',          label: 'Pengumuman',                done: false },
-  { date: '18 Okt 2026',          label: 'Technical Meeting',         done: false },
-  { date: '19 – 30 Okt 2026',     label: 'Penyelesaian',              done: false },
+  { date: '11 Sep – 18 Okt 2026', label: 'Pendaftaran & Pengumpulan', done: false, current: true },
+  { date: '19 – 24 Okt 2026',     label: 'Penjurian',                 done: false },
+  { date: '25 Okt 2026',          label: 'Pengumuman',                done: false },
+  { date: '26 Okt 2026',          label: 'Technical Meeting',         done: false },
+  { date: '27 – 30 Okt 2026',     label: 'Penyelesaian',              done: false },
   { date: '31 Okt 2026',          label: 'Seminar & Grand Final',     done: false },
 ]
 
@@ -377,13 +377,13 @@ onMounted(() => {
                            transition-all duration-200 active:scale-[0.98]">
               Daftar Sekarang →
             </button>
-            <a href="https://drive.google.com/drive/folders/1XKAmL9m-LU5B7DW3ibcGnJVsYtiOiTXN?usp=sharing" target="_blank" rel="noopener noreferrer"
+            <a href="https://drive.google.com/drive/folders/15niLd8E6-iBxeL6bmPMz0ssqNtNMKUkz" target="_blank" rel="noopener noreferrer"
                class="w-full sm:w-56 px-7 py-3.5 text-sm font-medium text-center rounded-xl
                       border-2 border-white/50 text-white hover:bg-white/20
                       hover:border-white transition-all duration-200
                       flex items-center justify-center gap-2 backdrop-blur-sm">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Unduh Guidebook
+              Lihat Guidebook
             </a>
           </div>
           <div class="flex flex-wrap items-center justify-center gap-3 mt-12 sm:mt-14 animate-fade-in-up [animation-delay:360ms]">
@@ -561,7 +561,7 @@ onMounted(() => {
                         border-2 border-amber-200 shadow-lg shadow-amber-500/10 mb-4">
               <div class="absolute left-0 top-5 bottom-5 w-1 rounded-full bg-amber-400"></div>
               <p class="text-xs text-amber-700 mb-1 uppercase tracking-wider font-bold pl-3">Total Hadiah</p>
-              <p class="text-4xl font-extrabold text-amber-700 mb-0.5 pl-3">Rp 4 Jt+</p>
+              <p class="text-4xl font-extrabold text-amber-700 mb-0.5 pl-3">Rp 3,5 Jt+</p>
               <p class="text-sm text-gray-500 pl-3">Juara 1 · Juara 2 · Juara 3</p>
             </div>
 
@@ -932,8 +932,8 @@ onMounted(() => {
 
                 <!-- Nama lengkap ketua -->
                 <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Lengkap (Ketua Tim)</label>
-                  <input v-model="registerForm.name" type="text" placeholder="Nama lengkap kamu"
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Lengkap (Ketua Tim) <span class="text-red-500">*</span></label>
+                  <input v-model="registerForm.name" type="text" placeholder="Nama lengkap kamu" required
                          class="w-full px-4 py-2.5 rounded-xl border-2 bg-gray-50 text-sm text-gray-800
                                 placeholder-gray-400 focus:outline-none transition-all duration-200"
                          :class="registerForm.errors.name ? 'border-red-400' : 'border-gray-200 focus:border-blue-500'" />
@@ -942,8 +942,8 @@ onMounted(() => {
 
                 <!-- Email -->
                 <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email</label>
-                  <input v-model="registerForm.email" type="email" placeholder="kamu@email.com"
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email <span class="text-red-500">*</span></label>
+                  <input v-model="registerForm.email" type="email" placeholder="kamu@email.com" required
                          class="w-full px-4 py-2.5 rounded-xl border-2 bg-gray-50 text-sm text-gray-800
                                 placeholder-gray-400 focus:outline-none transition-all duration-200"
                          :class="registerForm.errors.email ? 'border-red-400' : 'border-gray-200 focus:border-blue-500'" />
@@ -953,16 +953,16 @@ onMounted(() => {
                 <!-- Password -->
                 <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Password</label>
-                    <input v-model="registerForm.password" type="password" placeholder="Min. 6 karakter"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Password <span class="text-red-500">*</span></label>
+                    <input v-model="registerForm.password" type="password" placeholder="Min. 6 karakter" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 bg-gray-50 text-sm text-gray-800
                                   placeholder-gray-400 focus:outline-none transition-all duration-200"
                            :class="registerForm.errors.password ? 'border-red-400' : 'border-gray-200 focus:border-blue-500'" />
                     <p v-if="registerForm.errors.password" class="mt-1 text-xs text-red-500">{{ registerForm.errors.password }}</p>
                   </div>
                   <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Konfirmasi Password</label>
-                    <input v-model="registerForm.password_confirmation" type="password" placeholder="Ulangi password"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Konfirmasi Password <span class="text-red-500">*</span></label>
+                    <input v-model="registerForm.password_confirmation" type="password" placeholder="Ulangi password" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800
                                   placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all duration-200" />
                   </div>
@@ -977,8 +977,8 @@ onMounted(() => {
 
                 <!-- Nama tim -->
                 <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Tim</label>
-                  <input v-model="registerForm.team_name" type="text" placeholder="Nama tim kamu"
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Tim <span class="text-red-500">*</span></label>
+                  <input v-model="registerForm.team_name" type="text" placeholder="Nama tim kamu" required
                          class="w-full px-4 py-2.5 rounded-xl border-2 bg-gray-50 text-sm text-gray-800
                                 placeholder-gray-400 focus:outline-none transition-all duration-200"
                          :class="registerForm.errors.team_name ? 'border-red-400' : 'border-gray-200 focus:border-blue-500'" />
@@ -988,13 +988,12 @@ onMounted(() => {
                 <!-- Kategori & Jumlah Anggota -->
                 <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Kategori Peserta</label>
-                    <select v-model="registerForm.category"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Kategori Peserta <span class="text-red-500">*</span></label>
+                    <select v-model="registerForm.category" required
                             class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800
                                    focus:outline-none focus:border-blue-500 transition-all duration-200">
-                      <option value="sma">Pelajar SMA/SMK</option>
                       <option value="mahasiswa">Mahasiswa</option>
-                      <option value="umum">Masyarakat Umum</option>
+                      <option value="sma">Siswa SMA/SMK</option>
                     </select>
                   </div>
                   <div>
@@ -1010,8 +1009,8 @@ onMounted(() => {
 
                 <!-- Institusi -->
                 <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Asal Sekolah / Kampus</label>
-                  <input v-model="registerForm.institution" type="text" placeholder="Nama sekolah atau kampus"
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Asal Sekolah / Kampus <span class="text-red-500">*</span></label>
+                  <input v-model="registerForm.institution" type="text" placeholder="Nama sekolah atau kampus" required
                          class="w-full px-4 py-2.5 rounded-xl border-2 bg-gray-50 text-sm text-gray-800
                                 placeholder-gray-400 focus:outline-none transition-all duration-200"
                          :class="registerForm.errors.institution ? 'border-red-400' : 'border-gray-200 focus:border-blue-500'" />
@@ -1020,8 +1019,8 @@ onMounted(() => {
 
                 <!-- No HP -->
                 <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nomor HP Ketua Tim</label>
-                  <input v-model="registerForm.phone" type="tel" placeholder="08xxxxxxxxxx"
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nomor HP Ketua Tim <span class="text-red-500">*</span></label>
+                  <input v-model="registerForm.phone" type="tel" placeholder="08xxxxxxxxxx" required
                          class="w-full px-4 py-2.5 rounded-xl border-2 bg-gray-50 text-sm text-gray-800
                                 placeholder-gray-400 focus:outline-none transition-all duration-200"
                          :class="registerForm.errors.phone ? 'border-red-400' : 'border-gray-200 focus:border-blue-500'" />
@@ -1031,7 +1030,11 @@ onMounted(() => {
                 <!-- Biaya info -->
                 <div class="flex items-start gap-2 px-4 py-3 rounded-xl border-2 border-amber-200 bg-amber-50 text-xs text-amber-700">
                   <CreditCard :size="14" class="flex-shrink-0 mt-0.5" />
-                  <span>Biaya pendaftaran: <strong>Rp 100.000 / tim</strong>. Bukti transfer diunggah setelah daftar.</span>
+                  <span>
+                    Biaya pendaftaran: <strong>Rp 100.000 / tim</strong>.<br>
+                    Transfer ke: <strong>SeaBank · 901537947187</strong><br>
+                    a.n <strong>Balqis Safitri</strong>. Bukti transfer diunggah setelah daftar.
+                  </span>
                 </div>
 
                 <!-- Submit -->

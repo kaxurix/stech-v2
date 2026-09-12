@@ -27,9 +27,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/payment/{id}/view',     [PaymentController::class, 'view'])->name('payment.view');
 });
 
-// ── Dynamic Asset Proxy (Filament & Livewire) ──────────────────────────────────
-// Serves assets dynamically from vendor/ if static files in public/ are missing or removed by antivirus
-Route::get('/js/filament/{path}',  fn ($path) => app(\App\Http\Controllers\AssetProxyController::class)->filamentAsset('js', $path))->where('path', '.*');
-Route::get('/css/filament/{path}', fn ($path) => app(\App\Http\Controllers\AssetProxyController::class)->filamentAsset('css', $path))->where('path', '.*');
-Route::get('/vendor/livewire/{path}', [\App\Http\Controllers\AssetProxyController::class, 'livewireAsset'])->where('path', '.*');
 

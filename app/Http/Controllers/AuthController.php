@@ -46,7 +46,7 @@ class AuthController extends Controller
             'member_count' => ['required', 'integer', 'min:2', 'max:3'],
             'institution'  => ['required', 'string', 'max:150'],
             'phone'        => ['required', 'string', 'max:20'],
-            'category'     => ['required', 'in:sma,mahasiswa,umum'],
+            'category'     => ['required', 'in:sma,mahasiswa'],
         ], [
             'email.unique'          => 'Email sudah terdaftar.',
             'password.confirmed'    => 'Konfirmasi password tidak cocok.',

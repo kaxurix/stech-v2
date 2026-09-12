@@ -595,15 +595,15 @@ onMounted(() => {
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">Bank</p>
-                <p class="text-sm font-bold text-blue-900">BCA</p>
+                <p class="text-sm font-bold text-blue-900">SeaBank</p>
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">No. Rekening</p>
-                <p class="text-sm font-bold text-amber-700">Menyusul</p>
+                <p class="text-sm font-bold text-amber-700">901537947187</p>
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">Atas Nama</p>
-                <p class="text-sm font-bold text-blue-900">Panitia S-Tech</p>
+                <p class="text-sm font-bold text-blue-900">Balqis Safitri</p>
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">Nominal</p>
@@ -612,7 +612,7 @@ onMounted(() => {
             </div>
             <p class="text-xs text-gray-500 mt-3 pt-3 border-t border-amber-200/60 flex items-start gap-1.5">
               <AlertTriangle :size="14" class="flex-shrink-0 mt-0.5 text-amber-500" />
-              <span><strong class="text-gray-700">Nomor rekening masih menyusul</strong> — mohon tunggu pengumuman dari panitia sebelum melakukan transfer. Nominalnya <strong class="text-gray-700">Rp 100.000</strong>, nanti ditransfer tepat sejumlah itu (tidak kurang/lebih) agar verifikasi lebih mudah.
+              <span>Transfer tepat <strong class="text-gray-700">Rp 100.000</strong> (tidak kurang/lebih) agar verifikasi lebih mudah.
                 Ada pertanyaan? Hubungi
                 <a href="https://wa.me/6281225505309" target="_blank" rel="noopener noreferrer"
                    class="font-semibold text-amber-700 underline hover:text-amber-800">Aldi (081225505309)</a>.</span>
@@ -769,38 +769,38 @@ onMounted(() => {
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div class="sm:col-span-2">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Lengkap</label>
-                    <input v-model="member.full_name" type="text" placeholder="Nama lengkap"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nama Lengkap <span class="text-red-500">*</span></label>
+                    <input v-model="member.full_name" type="text" placeholder="Nama lengkap" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
                   </div>
                   <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">NIM / NISN</label>
-                    <input v-model="member.identity_number" type="text" placeholder="Nomor induk"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">NIM / NISN <span class="text-red-500">*</span></label>
+                    <input v-model="member.identity_number" type="text" placeholder="Nomor induk" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
                   </div>
                   <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nomor WhatsApp</label>
-                    <input v-model="member.phone" type="tel" placeholder="08xxxxxxxxxx"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Nomor WhatsApp <span class="text-red-500">*</span></label>
+                    <input v-model="member.phone" type="tel" placeholder="08xxxxxxxxxx" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
                   </div>
                   <div class="sm:col-span-2">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Asal Sekolah / Kampus</label>
-                    <input v-model="member.institution" type="text" placeholder="Nama sekolah atau kampus"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Asal Sekolah / Kampus <span class="text-red-500">*</span></label>
+                    <input v-model="member.institution" type="text" placeholder="Nama sekolah atau kampus" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
                   </div>
                   <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jurusan/Prodi <span class="text-gray-500 font-normal">(opsional)</span></label>
-                    <input v-model="member.major" type="text" placeholder="Contoh: Informatika"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jurusan/Prodi <span class="text-red-500">*</span></label>
+                    <input v-model="member.major" type="text" placeholder="Contoh: Informatika" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
                   </div>
                   <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Angkatan/Kelas <span class="text-gray-500 font-normal">(opsional)</span></label>
-                    <input v-model="member.batch" type="text" placeholder="Contoh: 2023 / XII IPA 1"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Angkatan/Kelas <span class="text-red-500">*</span></label>
+                    <input v-model="member.batch" type="text" placeholder="Contoh: 2023 / XII IPA 1" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
                   </div>
                   <div class="sm:col-span-2">
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email <span class="text-gray-500 font-normal">(opsional)</span></label>
-                    <input v-model="member.email" type="email" placeholder="email@contoh.com"
+                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email <span class="text-red-500">*</span></label>
+                    <input v-model="member.email" type="email" placeholder="email@contoh.com" required
                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
                   </div>
                 </div>
@@ -831,7 +831,7 @@ onMounted(() => {
 
           <div class="rounded-3xl border-4 border-white bg-white shadow-2xl p-6 sm:p-8">
             <h2 class="text-lg font-bold text-blue-900 mb-1">{{ props.submission ? 'Update' : 'Submit' }} Karya</h2>
-            <p class="text-sm text-gray-500 mb-5">Masukkan link repository GitHub dan/atau Google Drive hasil project timmu.</p>
+            <p class="text-sm text-gray-500 mb-5">Masukkan link repository GitHub dan Google Drive hasil project timmu.</p>
 
             <!-- Guideline box -->
             <div class="mb-5 p-4 rounded-xl border-2 border-amber-200 bg-amber-50">
@@ -841,7 +841,7 @@ onMounted(() => {
               <ul class="text-xs text-gray-600 space-y-1">
                 <li>• Pastikan repository GitHub <strong class="text-gray-800">sudah public</strong></li>
                 <li>• Sertakan file <strong class="text-gray-800">README.md</strong> dengan panduan menjalankan project</li>
-                <li>• Jika ada video demo, upload ke Drive dan masukkan link di kolom Drive</li>
+                <li>• Video demo dan proposal wajib diupload ke Drive dan masukkan link di kolom Drive</li>
                 <li>• Submit dapat diperbarui <strong class="text-gray-800">selama deadline belum berakhir</strong></li>
               </ul>
             </div>
@@ -849,22 +849,22 @@ onMounted(() => {
             <div class="space-y-4">
               <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-1.5">Judul Project <span class="text-red-500">*</span></label>
-                <input v-model="submitForm.project_title" type="text" placeholder="Contoh: Aplikasi Manajemen Perpustakaan"
+                <input v-model="submitForm.project_title" type="text" placeholder="Contoh: Aplikasi Manajemen Perpustakaan" required
                        class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-1.5">Link GitHub <span class="text-red-500">*</span></label>
-                <input v-model="submitForm.github_url" type="url" placeholder="https://github.com/username/nama-repo"
+                <input v-model="submitForm.github_url" type="url" placeholder="https://github.com/username/nama-repo" required
                        class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Link Google Drive <span class="text-gray-500 font-normal">(Opsional — video demo, docs)</span></label>
-                <input v-model="submitForm.drive_url" type="url" placeholder="https://drive.google.com/..."
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5">Link Google Drive <span class="text-red-500">*</span></label>
+                <input v-model="submitForm.drive_url" type="url" placeholder="https://drive.google.com/..." required
                        class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-gray-600 mb-1.5">Deskripsi Singkat <span class="text-red-500">*</span></label>
-                <textarea v-model="submitForm.description" rows="3"
+                <textarea v-model="submitForm.description" rows="3" required
                           placeholder="Jelaskan fitur utama project kamu, teknologi yang digunakan, dan cara kerjanya..."
                           class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-500 transition-all resize-none"></textarea>
               </div>

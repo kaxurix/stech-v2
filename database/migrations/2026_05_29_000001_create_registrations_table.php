@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('member_count')->default(2); // 2-3
             $table->string('institution'); // asal sekolah/kampus
             $table->string('phone'); // no. HP ketua tim
-            $table->string('category'); // sma | mahasiswa | umum
+            $table->string('category'); // sma | mahasiswa
             // Status: pending_payment | pending_verification | verified | rejected
             $table->string('status')->default('pending_payment');
             $table->timestamps();
