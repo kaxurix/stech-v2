@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Route;
 
 // ── Public ────────────────────────────────────────────────────────────────────
 Route::get('/', [AuthController::class, 'welcome'])->name('welcome');
+Route::get('/sitemap.xml', function () {
+    return response()->view('sitemap')->header('Content-Type', 'application/xml');
+})->name('sitemap');
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 Route::post('/register', [AuthController::class, 'register'])->name('register');

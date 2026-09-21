@@ -595,11 +595,11 @@ onMounted(() => {
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">Bank</p>
-                <p class="text-sm font-bold text-blue-900">SeaBank</p>
+                <p class="text-sm font-bold text-blue-900">BNI</p>
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">No. Rekening</p>
-                <p class="text-sm font-bold text-amber-700">901537947187</p>
+                <p class="text-sm font-bold text-amber-700">2110379599</p>
               </div>
               <div>
                 <p class="text-[10px] text-gray-500 mb-0.5">Atas Nama</p>

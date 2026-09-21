@@ -31,8 +31,8 @@ jaringan kampus.
 | Password SSH | (lihat catatan WhatsApp) |
 | Folder aplikasi | `/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id` |
 
-**3. Pastikan semua perubahan sudah di-push ke GitHub.**
-Deploy mengambil kode dari GitHub, bukan dari laptop.
+**3. Pastikan perubahan lokal sudah siap dikirim.**
+Deploy source dilakukan langsung dari laptop Windows memakai `scp`, bukan Git.
 
 ---
 
@@ -46,34 +46,39 @@ cd C:\Users\MSI\Documents\project\2026\stech
 npm run build
 ```
 
-Tunggu sampai muncul `✓ built in ...`.
-
-Lalu push kode:
-
-```bash
-git add -A
-git commit -m "deskripsi perubahan"
-git push origin main
-```
-
-Kemas asetnya jadi satu file:
-
-```bash
-tar -czf build.tgz -C public build
-```
-
 ---
 
-## LANGKAH 2 — Kirim aset ke server
+## LANGKAH 2 — Kirim source dan aset ke server
 
-```bash
-scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
+Jalankan dari PowerShell di folder project. Kirim file source yang berubah
+beserta file route, view, dan SEO:
+
+```powershell
+$hostName = "unsoed-stech-ft@stech.ft.unsoed.ac.id"
+$remote = "/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id"
+
+scp routes/web.php "${hostName}:${remote}/routes/"
+scp resources/views/app.blade.php "${hostName}:${remote}/resources/views/"
+scp resources/views/sitemap.blade.php "${hostName}:${remote}/resources/views/"
+scp public/robots.txt "${hostName}:${remote}/public/"
+scp resources/js/Pages/Welcome.vue "${hostName}:${remote}/resources/js/Pages/"
+scp resources/js/Pages/Dashboard.vue "${hostName}:${remote}/resources/js/Pages/"
+```
+
+Tambahkan file lain ke daftar `scp` bila file tersebut ikut diubah. Jangan
+mengirim `.env` dari laptop karena konfigurasi produksi harus tetap di server.
+
+Hapus folder build lama lalu kirim folder build baru secara langsung:
+
+```powershell
+ssh $hostName "rm -rf ${remote}/public/build"
+scp -r public/build "${hostName}:${remote}/public/"
 ```
 
 Masukkan password saat diminta.
 
 > **Kenapa aset dikirim terpisah?** Folder `public/build` sengaja tidak ikut
-> git (ada di `.gitignore`). Kalau langkah ini dilewat, situs akan tampil
+> source control (ada di `.gitignore`). Kalau langkah ini dilewat, situs akan tampil
 > **polos tanpa CSS sama sekali**. Ini kesalahan paling sering terjadi.
 
 ---
@@ -100,15 +105,16 @@ ukurannya tidak 0 byte sebelum lanjut.
 
 ---
 
-## LANGKAH 4 — Ambil kode baru
+## LANGKAH 4 — Pasang source yang sudah dikirim
 
-Masih di dalam SSH, di folder aplikasi:
+Masuk ke server melalui SSH, lalu di folder aplikasi jalankan:
 
 ```bash
-git checkout -- bootstrap/cache/.gitignore package-lock.json
-git pull origin main
 composer install --no-dev --optimize-autoloader
 ```
+
+Tidak perlu `git pull`; file source sudah dikirim melalui `scp` pada langkah
+sebelumnya.
 
 `composer install` sekaligus menerbitkan aset Filament, jadi tidak perlu
 perintah terpisah.
@@ -118,8 +124,6 @@ perintah terpisah.
 ## LANGKAH 5 — Pasang aset frontend
 
 ```bash
-rm -rf public/build
-tar -xzf ~/tmp/build.tgz -C public
 rm -f public/hot
 ls public/build/assets | head
 ```
@@ -162,7 +166,7 @@ Lalu buka di browser dan pastikan:
 - [ ] Halaman depan tampil **lengkap dengan warna/gambar** (bukan teks polos)
 - [ ] Timeline menampilkan 6 tahap (11 Sep – 31 Okt)
 - [ ] Biaya tertulis **Rp 100.000** (bukan 75.000)
-- [ ] Format tim **2–3 orang**
+- [ ] Format tim **1–3 orang**
 - [ ] Footer ada **Narahubung: Aldi**
 - [ ] Coba daftar 1 tim uji, lalu hapus lagi lewat panel admin
 
@@ -184,7 +188,6 @@ Setelah admin menyetujui, jalankan di server:
 
 ```bash
 cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
-git checkout -- public/js/
 php artisan livewire:publish --assets
 php artisan filament:assets
 php artisan config:cache && php artisan route:cache && php artisan view:cache
@@ -270,10 +273,13 @@ dummy. Hanya untuk komputer lokal.
 
 Kalau deploy bermasalah berat, kembalikan dari backup Langkah 3:
 
+- Kirim ulang file source versi terakhir yang diketahui baik menggunakan
+	perintah `scp` pada Langkah 2.
+- Jika aset frontend ikut bermasalah, kirim ulang folder `public/build` versi
+	tersebut menggunakan `scp -r`.
+
 ```bash
 cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
-git log --oneline -5                      # cari commit sebelumnya
-git reset --hard <commit-sebelumnya>
 composer install --no-dev --optimize-autoloader
 mysql -h stech.ft.unsoed.ac.id -u stech -p 'stech-db' < ~/backups/predeploy-XXX/db.sql
 php artisan config:cache && php artisan route:cache && php artisan view:cache
@@ -286,17 +292,22 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 ```bash
 # --- di laptop ---
 npm run build
-git add -A && git commit -m "update" && git push origin main
-tar -czf build.tgz -C public build
-scp build.tgz unsoed-stech-ft@stech.ft.unsoed.ac.id:~/tmp/
+
+$hostName = "unsoed-stech-ft@stech.ft.unsoed.ac.id"
+$remote = "/home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id"
+scp routes/web.php "${hostName}:${remote}/routes/"
+scp resources/views/app.blade.php "${hostName}:${remote}/resources/views/"
+scp resources/views/sitemap.blade.php "${hostName}:${remote}/resources/views/"
+scp public/robots.txt "${hostName}:${remote}/public/"
+ssh $hostName "rm -rf ${remote}/public/build"
+scp -r public/build "${hostName}:${remote}/public/"
 
 # --- di server (setelah ssh) ---
 cd /home/unsoed-stech-ft/htdocs/stech.ft.unsoed.ac.id
 BK=~/backups/predeploy-$(date +%Y%m%d-%H%M%S); mkdir -p $BK && cp .env $BK/
 mysqldump -h stech.ft.unsoed.ac.id -u stech -p 'stech-db' > $BK/db.sql
-git pull origin main
 composer install --no-dev --optimize-autoloader
-rm -rf public/build && tar -xzf ~/tmp/build.tgz -C public && rm -f public/hot
+rm -f public/hot
 php artisan migrate --force
 chmod -R 775 storage bootstrap/cache
 php artisan config:cache && php artisan route:cache && php artisan view:cache

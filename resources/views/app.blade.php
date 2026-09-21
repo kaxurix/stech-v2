@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Soedirman Technophoria — Ajang kompetisi teknologi tahunan bergengsi Universitas Jenderal Soedirman." />
+    <link rel="canonical" href="{{ url('/') }}" />
 
     {{-- SEO / OG --}}
     <meta property="og:title" content="Soedirman Technophoria 2026" />

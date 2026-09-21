@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import {
@@ -46,7 +46,7 @@ const loginForm = ref<LoginForm>({
 
 const registerForm = ref<RegisterForm>({
   name: '', email: '', password: '', password_confirmation: '',
-  team_name: '', competition: 'web-development', member_count: 2,
+  team_name: '', competition: 'web-development', member_count: 1,
   institution: '', phone: '', category: 'mahasiswa',
   loading: false, errors: {},
 })
@@ -548,7 +548,7 @@ onMounted(() => {
               </div>
               <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
                 <p class="text-[9px] text-blue-600 font-semibold">Format Tim</p>
-                <p class="text-xs font-semibold text-blue-900">2–3 Orang</p>
+                <p class="text-xs font-semibold text-blue-900">1–3 Orang</p>
               </div>
               <div class="px-3 py-1.5 rounded-lg border-2 border-blue-100 bg-blue-50">
                 <p class="text-[9px] text-blue-600 font-semibold">Biaya</p>
@@ -998,12 +998,15 @@ onMounted(() => {
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1.5">Jumlah Anggota</label>
-                    <select v-model="registerForm.member_count"
-                            class="w-full px-4 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-sm text-gray-800
-                                   focus:outline-none focus:border-blue-500 transition-all duration-200">
-                      <option :value="2">2 Orang</option>
-                      <option :value="3">3 Orang</option>
-                    </select>
+                     <select v-model="registerForm.member_count"
+                             class="w-full px-4 py-2.5 rounded-xl border-2 bg-gray-50 text-sm text-gray-800
+                                    focus:outline-none transition-all duration-200"
+                             :class="registerForm.errors.member_count ? 'border-red-400' : 'border-gray-200 focus:border-blue-500'">
+                       <option :value="1">1 Orang</option>
+                       <option :value="2">2 Orang</option>
+                       <option :value="3">3 Orang</option>
+                     </select>
+                     <p v-if="registerForm.errors.member_count" class="mt-1 text-xs text-red-500">{{ registerForm.errors.member_count }}</p>
                   </div>
                 </div>
 
@@ -1032,7 +1035,7 @@ onMounted(() => {
                   <CreditCard :size="14" class="flex-shrink-0 mt-0.5" />
                   <span>
                     Biaya pendaftaran: <strong>Rp 100.000 / tim</strong>.<br>
-                    Transfer ke: <strong>SeaBank · 901537947187</strong><br>
+                    Transfer ke: <strong>BNI · 2110379599</strong><br>
                     a.n <strong>Balqis Safitri</strong>. Bukti transfer diunggah setelah daftar.
                   </span>
                 </div>

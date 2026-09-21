@@ -1,2 +1,3 @@
 User-agent: *
 Disallow:
+Sitemap: https://stech.ft.unsoed.ac.id/sitemap.xml
